@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bᴋᴀsʜ Mᴏɴᴇʏ Cᴀsʜ 🥇</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bkash-pink: #E2136E; 
+            --bkash-dark: #C10F5D;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            color: #1e293b;
+            overflow: hidden;
+        }
+        
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .loader-img-container {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(45deg, var(--bkash-pink), #ff6b9e);
+            box-shadow: 0 0 20px rgba(226, 19, 110, 0.4);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .loader-img-container::after {
+            content: '';
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50%;
+            border: 2px solid var(--bkash-pink);
+            opacity: 0;
+            animation: pulse-ring 2s infinite;
+        }
+        .loader-icon {
+            font-size: 40px;
+            color: white;
+            z-index: 10;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .gold-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+        }
+        .gold-card::before, .premium-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-25deg);
+            animation: shimmer 3s infinite;
+        }
+        .premium-card {
+            background: linear-gradient(135deg, #E2136E 0%, #C10F5D 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            50%, 100% { left: 200%; }
+        }
+
+        @keyframes shimmer-slide {
+            0% { transform: translateX(-150%) skewX(-20deg); }
+            100% { transform: translateX(200%) skewX(-20deg); }
+        }
+        .shimmer-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 30%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shimmer-slide 2.5s infinite;
+        }
+
+        .btn-press:active { transform: scale(0.96); }
+        .nav-item.active { color: var(--bkash-pink); }
+        .nav-item.active .nav-icon { background-color: #fce4ec; transform: translateY(-5px); color: var(--bkash-pink);}
+
+        .gateway-btn {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .gateway-btn.selected {
+            border-color: var(--bkash-pink);
+            background-color: #fce4ec;
+            box-shadow: 0 0 0 2px rgba(226, 19, 110, 0.15);
+        }
+
+        .amount-btn {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .amount-btn.selected {
+            border-color: var(--bkash-pink);
+            background-color: var(--bkash-pink);
+            color: white;
+            box-shadow: 0 4px 10px rgba(226, 19, 110, 0.3);
+        }
+
+        ::-webkit-scrollbar { width: 0px; }
+        
+        .ribbon-wrapper {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            z-index: 10;
+        }
+        .ribbon {
+            font-size: 10px;
+            font-weight: bold;
+            color: #FFF;
+            text-align: center;
+            transform: rotate(45deg);
+            position: relative;
+            padding: 5px 0;
+            left: -5px;
+            top: 20px;
+            width: 130px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .chat-bubble {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 15px;
+            border-style: solid;
+            border-width: 8px 10px 8px 0;
+            border-color: transparent white transparent transparent;
+        }
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 15px;
+            border-style: solid;
+            border-width: 8px 10px 8px 0;
+            border-color: transparent #e2e8f0 transparent transparent;
+            z-index: -1;
+        }
+
+        .animated-bg-gradient {
+            background-size: 200% 200%;
+            animation: gradientMove 3s ease infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="h-screen flex justify-center">
+
+    <div id="global-loader" class="fixed inset-0 z-[100] bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="loader-img-container mb-6">
+            <i class="fa-solid fa-wallet loader-icon"></i>
+        </div>
+        <h2 class="text-slate-800 font-bold text-2xl tracking-wide font-inter">Bᴋᴀsʜ Mᴏɴᴇʏ Cᴀsʜ 🥇</h2>
+        <p class="text-[#E2136E] text-sm mt-2 font-medium animate-pulse">লগইন চেক করা হচ্ছে...</p>
+    </div>
+
+    <div id="vip-details-modal" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4 transition-opacity duration-300">
+        <div class="bg-white rounded-[1.5rem] max-w-sm w-full shadow-2xl overflow-hidden transform transition-all scale-95" id="vip-modal-content">
+            <div class="p-6">
+                <h3 class="text-2xl font-bold text-slate-800 text-center mb-5" id="modal-vip-title">VIP বিস্তারিত</h3>
+                
+                <div class="space-y-3 font-inter">
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                        <span class="text-slate-600 font-bold text-sm">মূল্য:</span>
+                        <span class="text-[#f59e0b] font-bold text-lg" id="modal-vip-price">৳0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                        <span class="text-slate-600 font-bold text-sm">দৈনিক এআই টাস্ক:</span>
+                        <span class="text-slate-800 font-bold text-sm" id="modal-vip-tasks">0 টি</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                        <span class="text-slate-600 font-bold text-sm">প্ল্যান মেয়াদ:</span>
+                        <span class="text-slate-800 font-bold text-sm" id="modal-vip-validity">0 দিন</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100">
+                        <span class="text-slate-600 font-bold text-sm">দৈনিক আয়:</span>
+                        <span class="text-emerald-500 font-bold text-sm" id="modal-vip-daily">৳0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-slate-600 font-bold text-sm">সর্বমোট আয়:</span>
+                        <span class="text-emerald-500 font-extrabold text-lg" id="modal-vip-total">৳0</span>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button onclick="closeVipDetails()" class="w-full bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold py-4 rounded-xl btn-press shadow-lg shadow-[#f59e0b]/30 tracking-wide text-sm">
+                        বন্ধ করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="welcome-modal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4">
+        <div class="bg-white rounded-[2rem] max-w-sm w-full p-8 shadow-2xl animate-[bounce_1s_ease-in-out]">
+            <div class="text-center mb-5">
+                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i class="fa-solid fa-bell text-[#E2136E] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">জরুরী নোটিশ</h3>
+            </div>
+            <p id="welcome-text" class="text-slate-600 text-sm text-center leading-relaxed mb-6 font-medium">তথ্য লোড হচ্ছে...</p>
+            <button onclick="closeModal()" class="w-full bg-[#E2136E] text-white font-bold py-4 rounded-xl btn-press shadow-lg shadow-[#E2136E]/30 tracking-wide">কাজ শুরু করুন</button>
+        </div>
+    </div>
+
+    <div id="activation-nag-modal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-md hidden px-4 transition-opacity">
+        <div class="bg-white rounded-[2rem] max-w-sm w-full p-8 shadow-2xl text-center border border-red-100 transform transition-all scale-95">
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse shadow-inner">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-4xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800 mb-3">অ্যাকাউন্ট ইনঅ্যাক্টিভ! ⚠️</h3>
+            <p class="text-[15px] text-slate-600 mb-8 leading-relaxed">অ্যাপে কাজ করতে এবং টাকা তুলতে আপনার অ্যাকাউন্টটি মাত্র <span class="font-bold text-[#E2136E] bg-pink-50 px-2 py-0.5 rounded shadow-sm border border-pink-100" id="nag-fee-amount">২০ টাকা</span> ফি দিয়ে অ্যাক্টিভ করা বাধ্যতামূলক।</p>
+            <button onclick="goToActivation()" class="w-full bg-gradient-to-r from-red-500 to-[#E2136E] text-white font-bold py-4 rounded-xl btn-press shadow-lg shadow-red-500/30 tracking-wide flex items-center justify-center gap-2 mb-4 text-[15px]">
+                <i class="fa-solid fa-bolt"></i> এখনই অ্যাক্টিভ করুন
+            </button>
+            <button onclick="closeActivationNag()" class="text-slate-400 text-sm font-bold underline hover:text-slate-600 transition">পরে করব (কোনো কাজ করা যাবে না)</button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md h-full bg-[#f8fafc] relative shadow-2xl flex flex-col hidden" id="app-container">
+        
+        <div class="glass px-6 py-4 flex items-center justify-between z-40 absolute top-0 left-0 w-full rounded-b-3xl border-b border-white/50 shadow-[0_5px_15px_rgba(0,0,0,0.03)]">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#E2136E] to-[#C10F5D] p-0.5 shadow-md">
+                    <img id="user-avatar" src="https://placehold.co/100" class="w-full h-full rounded-full object-cover border-2 border-white">
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-800 text-[15px] tracking-tight" id="header-username">ব্যবহারকারী</h1>
+                    <p class="text-[14px] text-[#E2136E] font-extrabold font-inter mt-0.5">৳ <span id="header-balance">0.00</span></p>
+                </div>
+            </div>
+            <div id="status-badge" class="px-3.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5 shadow-sm bg-slate-100 text-slate-500 border-slate-200">
+                <i class="fa-solid fa-spinner fa-spin"></i> Loading
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pt-28 pb-32 scroll-smooth px-5" id="main-content">
+            
+            <div id="view-home">
+                <div class="premium-card rounded-[1.5rem] p-7 text-white mb-8 shadow-[0_10px_30px_rgba(226,19,110,0.25)] mt-2">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 transform translate-x-2 -translate-y-2">
+                        <i class="fa-solid fa-wallet text-8xl"></i>
+                    </div>
+                    <p class="text-xs font-medium text-white/80 mb-2 tracking-wider uppercase">আপনার মোট ব্যালেন্স</p>
+                    <h1 class="text-4xl font-extrabold mb-7 font-inter tracking-tight">৳ <span id="home-balance">0.00</span></h1>
+                    
+                    <div class="flex gap-4 relative z-10">
+                        <button onclick="switchTab('vip')" class="flex-1 bg-white text-[#E2136E] py-3.5 rounded-xl font-bold text-[13px] shadow-lg btn-press flex items-center justify-center gap-2 transition hover:scale-105">
+                            <i class="fa-solid fa-crown"></i> ভিআইপি জোন
+                        </button>
+                        <button onclick="switchTab('withdraw')" class="flex-1 bg-white/20 backdrop-blur-md text-white border border-white/30 py-3.5 rounded-xl font-bold text-[13px] hover:bg-white/30 transition hover:scale-105 btn-press flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-money-bill-transfer"></i> টাকা তুলুন
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-[16px] flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#E2136E] shadow-sm border border-white">
+                                <i class="fa-solid fa-calendar-star text-[14px]"></i>
+                            </div>
+                            সাপ্তাহিক ধামাকা বোনাস!
+                        </h3>
+                        <span class="text-[10px] bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold px-3 py-1.5 rounded-full shadow-md animate-pulse uppercase tracking-wider">Hot Offer</span>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-pink-50/80 to-rose-50/80 p-5 rounded-[1.2rem] border border-pink-100 shadow-sm mb-5 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white rounded-full blur-2xl opacity-60"></div>
+                        <p class="text-xs text-slate-700 leading-relaxed font-medium relative z-10">
+                            বেশি বেশি রেফার করুন এবং <span class="text-[#E2136E] font-extrabold bg-white px-2 py-0.5 rounded shadow-sm border border-pink-100 mx-1">প্রতি সপ্তাহে</span> আকর্ষণীয় ক্যাশ বোনাস লুফে নিন! একবার টার্গেট পূরণ করলে প্রতি সপ্তাহে এই বোনাস ক্লেইম করতে পারবেন।
+                        </p>
+                    </div>
+                    
+                    <div id="weekly-bonus-container" class="grid grid-cols-1 gap-4">
+                        <div class="text-center py-8 glass rounded-[1.2rem] border border-slate-100"><i class="fa-solid fa-spinner fa-spin text-[#E2136E] text-2xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-[16px] flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-orange-500 text-lg"></i> রেফারেল টার্গেট (One Time)
+                        </h3>
+                    </div>
+                    <div id="milestone-container" class="transition-all duration-300">
+                        <div class="text-center py-8 glass rounded-[1.2rem] border border-slate-100"><i class="fa-solid fa-spinner fa-spin text-[#E2136E] text-2xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="font-bold text-slate-800 text-[16px] mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-blue-500 text-lg"></i> আমার ড্যাশবোর্ড
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass p-5 rounded-[1.2rem] flex flex-col justify-between h-32 border border-slate-100 shadow-sm hover:shadow-md transition">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shadow-inner border border-blue-100"><i class="fa-solid fa-users"></i></div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wide">মোট রেফার</p>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-2xl pl-1 font-inter" id="stat-referral">0</h3>
+                        </div>
+                        <div class="glass p-5 rounded-[1.2rem] flex flex-col justify-between h-32 border border-slate-100 shadow-sm hover:shadow-md transition">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shadow-inner border border-amber-100"><i class="fa-solid fa-crown"></i></div>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-wide">আমার ভিআইপি</p>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-[15px] pl-1 font-inter mt-1" id="stat-vip">ফ্রি ইউজার</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-vip" class="hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">ভিআইপি জোন</h2>
+                    <p class="text-sm text-slate-500 mt-1 font-medium">প্ল্যান অনুযায়ী প্রতিদিন AI টাস্ক কমপ্লিট করুন।</p>
+                </div>
+
+                <div id="active-vip-dashboard" class="hidden mb-10">
+                    <div class="gold-card rounded-3xl p-7 text-white mb-5 shadow-xl">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-xl flex items-center gap-2"><i class="fa-solid fa-crown"></i> <span id="active-vip-name">ভিআইপি</span></h3>
+                            <span class="text-[11px] bg-white/20 px-3 py-1 rounded-full border border-white/30 font-bold shadow-sm">মেয়াদ: <span id="active-vip-expire">0</span> দিন</span>
+                        </div>
+                        <p class="text-xs text-white/90 mb-5 font-medium leading-relaxed">প্রতিদিনের টাস্ক সাবমিট করে আয় করুন।</p>
+                        
+                        <div class="bg-white/10 p-5 rounded-2xl border border-white/20 mb-5 shadow-inner">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-bold">আজকের টাস্ক অগ্রগতি</span>
+                                <span class="text-[13px] font-bold font-inter bg-black/20 px-2.5 py-1 rounded-lg shadow-inner"><span id="active-vip-completed-tasks">0</span>/<span id="active-vip-total-tasks">0</span></span>
+                            </div>
+                            <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden shadow-inner p-[1px]">
+                                <div id="active-vip-progress" class="bg-white h-full rounded-full transition-all duration-500 relative overflow-hidden" style="width: 0%">
+                                    <div class="absolute inset-0 bg-white/50 w-full transform -skew-x-12 translate-x-[-100%] animate-[shimmer-slide_1.5s_infinite]"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="quiz-section" class="bg-white text-slate-800 p-6 rounded-[1.2rem] shadow-xl relative overflow-hidden hidden border-2 border-orange-100">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white shadow-md border-2 border-white">
+                                        <i class="fa-solid fa-robot text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800 text-[15px] flex items-center gap-1.5 mb-0.5">AI Assistant <i class="fa-solid fa-circle-check text-blue-500 text-[12px]"></i></h4>
+                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">System Intelligence</p>
+                                    </div>
+                                </div>
+                                <span class="text-[13px] bg-orange-50 text-[#f59e0b] px-3 py-1.5 rounded-lg font-bold border border-orange-100 shadow-sm" id="quiz-reward-text">রিওয়ার্ড: ৳0</span>
+                            </div>
+
+                            <div class="flex gap-4 mb-5">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 flex-shrink-0 flex items-center justify-center text-blue-500 text-xs font-bold shadow-inner border border-blue-100">AI</div>
+                                <div class="chat-bubble flex-1 shadow-sm border-slate-100 p-4">
+                                    <p class="font-bold text-slate-700 text-[15px] leading-relaxed" id="quiz-question">প্রশ্ন লোড হচ্ছে...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-row items-center gap-3 relative z-10 w-full">
+                                <input type="text" id="quiz-answer" placeholder="এখানে উত্তর লিখুন..." class="flex-1 w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:border-[#f59e0b] focus:bg-white transition shadow-sm font-medium">
+                                <button id="submit-quiz-btn" onclick="submitQuizAnswer()" class="bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white h-12 w-14 rounded-xl flex items-center justify-center btn-press shadow-lg shadow-[#f59e0b]/30 hover:scale-105 transition-transform flex-shrink-0">
+                                    <i class="fa-solid fa-paper-plane text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="quiz-completed-section" class="bg-white/10 text-center p-8 rounded-[1.2rem] border border-white/20 hidden backdrop-blur-sm">
+                            <i class="fa-solid fa-circle-check text-5xl mb-4 text-white shadow-sm rounded-full bg-white/10 p-2"></i>
+                            <h4 class="font-bold text-xl mb-1.5">আজকের কাজ শেষ! 🎉</h4>
+                            <p class="text-sm text-white/90 font-medium">দারুণ কাজ করেছেন। আগামীকাল আবার আসুন।</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="vip-packages-title" class="mb-5 font-bold text-slate-800 text-[16px] flex items-center gap-2 hidden"><i class="fa-solid fa-cart-shopping text-orange-500 text-lg"></i> নতুন প্ল্যান কিনুন</div>
+                <div id="vip-packages-list" class="space-y-5">
+                    <div class="text-center py-12 glass rounded-2xl border border-slate-100 text-slate-500 font-medium"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-[#f59e0b]"></i><br>প্যাকেজ লোড হচ্ছে...</div>
+                </div>
+            </div>
+
+            <div id="view-tasks" class="hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">মাইক্রো টাস্ক</h2>
+                    <p class="text-sm text-slate-500 mt-1 font-medium">ছোট ছোট কাজ করে এক্সট্রা আয় করুন</p>
+                </div>
+                <div id="tasks-list" class="space-y-4">
+                    <div class="text-center py-16 glass rounded-2xl border border-slate-100">
+                        <div class="w-10 h-10 border-4 border-slate-200 border-t-[#E2136E] rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-[15px] text-slate-500 font-medium">টাস্ক লোড হচ্ছে...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-withdraw" class="hidden">
+                <div class="gold-card rounded-3xl p-8 text-white text-center mb-8 shadow-xl">
+                    <p class="text-xs font-bold text-white/80 mb-2 uppercase tracking-widest">উত্তোলনযোগ্য ব্যালেন্স</p>
+                    <h1 class="text-[2.5rem] font-extrabold mb-1 font-inter tracking-tight">৳ <span id="withdraw-balance">0.00</span></h1>
+                </div>
+
+                <div id="withdraw-blocked-section" class="hidden glass border-2 border-red-50 rounded-[1.5rem] p-8 text-center shadow-sm mb-6">
+                    <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5 text-red-500 shadow-inner border border-red-100">
+                        <i class="fa-solid fa-lock text-3xl"></i>
+                    </div>
+                    <h3 class="text-slate-800 font-bold text-xl mb-2">অ্যাকাউন্ট অ্যাক্টিভ করুন</h3>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed font-medium">টাকা তুলতে হলে আপনাকে প্রথমে অ্যাকাউন্টটি অ্যাক্টিভ করতে মুহবে।</p>
+                    <button onclick="goToActivation()" class="w-full bg-red-500 text-white font-bold h-14 rounded-xl btn-press shadow-lg shadow-red-500/30 text-[15px] tracking-wide flex items-center justify-center">
+                        অ্যাক্টিভেশন পেজে যান
+                    </button>
+                </div>
+
+                <div id="withdraw-form-view" class="glass rounded-[1.5rem] p-6 shadow-sm space-y-6 hidden border border-slate-100">
+                    <div class="bg-pink-50/80 p-4.5 rounded-[1.2rem] border border-pink-100 text-center mb-2 shadow-sm">
+                        <p class="text-[13px] text-[#E2136E] font-bold mb-1.5 flex items-center justify-center gap-1.5">
+                           <i class="fa-solid fa-info-circle"></i> শর্ত: অ্যাক্টিভ রেফার কমপ্লিট করুন 
+                        </p>
+                        <p class="text-xs text-slate-600 font-medium">আপনার অ্যাক্টিভ রেফার: <span id="current-active-ref-count" class="font-extrabold text-slate-800 text-[14px] bg-white px-2 py-0.5 rounded shadow-sm border border-pink-100 mx-1">0</span> / <span id="req-min-ref" class="font-bold text-[14px]">2</span></p>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 mb-3 block uppercase tracking-wider pl-1">পেমেন্ট মেথড</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="selectGateway(this, 'Bkash')" class="gateway-btn rounded-2xl py-4 px-2 flex flex-col items-center justify-center gap-2 transition shadow-sm relative overflow-hidden group">
+                                <img src="bkash.png" onerror="this.src='https://seeklogo.com/images/B/bkash-logo-0C1572FBB4-seeklogo.com.png'" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+                                <span class="text-xs font-bold text-slate-700 mt-1">বিকাশ</span>
+                            </button>
+                            <button onclick="selectGateway(this, 'Nagad')" class="gateway-btn rounded-2xl py-4 px-2 flex flex-col items-center justify-center gap-2 transition shadow-sm relative overflow-hidden group">
+                                <img src="nagad.png" onerror="this.src='https://download.logo.wine/logo/N/Nagad/Nagad-Logo.wine.png'" class="w-12 h-8 object-contain group-hover:scale-110 transition-transform">
+                                <span class="text-xs font-bold text-slate-700 mt-1">নগদ</span>
+                            </button>
+                            <button onclick="selectGateway(this, 'Rocket')" class="gateway-btn rounded-2xl py-4 px-2 flex flex-col items-center justify-center gap-2 transition shadow-sm relative overflow-hidden group">
+                                <img src="rocket.png" onerror="this.src='https://seeklogo.com/images/D/dutch-bangla-rocket-logo-B4D16231EF-seeklogo.com.png'" class="w-8 h-8 object-contain group-hover:scale-110 transition-transform">
+                                <span class="text-xs font-bold text-slate-700 mt-1">রকেট</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="selected-gateway">
+                    </div>
+                    
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 mb-3 block uppercase tracking-wider pl-1">পরিমাণ (Amount)</label>
+                        <div class="grid grid-cols-2 gap-3" id="withdraw-amount-grid">
+                            <button onclick="selectAmount(this, 50)" class="amount-btn rounded-xl py-3.5 text-sm font-bold text-slate-700 transition shadow-sm">৳ ৫০</button>
+                            <button onclick="selectAmount(this, 100)" class="amount-btn rounded-xl py-3.5 text-sm font-bold text-slate-700 transition shadow-sm">৳ ১০০</button>
+                            <button onclick="selectAmount(this, 200)" class="amount-btn rounded-xl py-3.5 text-sm font-bold text-slate-700 transition shadow-sm">৳ ২০০</button>
+                            <button onclick="selectAmount(this, 400)" class="amount-btn rounded-xl py-3.5 text-sm font-bold text-slate-700 transition shadow-sm">৳ ৪০০</button>
+                        </div>
+                        <input type="hidden" id="selected-amount">
+                    </div>
+                    
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 mb-2.5 block uppercase tracking-wider pl-1">আপনার নাম্বার দিন</label>
+                        <input type="tel" id="withdraw-number" placeholder="01xxxxxxxxx" class="w-full h-14 bg-slate-50 border border-slate-200 rounded-[1rem] px-5 text-[15px] focus:outline-none focus:border-[#E2136E] focus:bg-white transition shadow-sm font-inter font-medium text-slate-800">
+                    </div>
+                    
+                    <button onclick="processWithdraw()" class="w-full bg-[#E2136E] text-white font-bold h-14 rounded-[1rem] shadow-lg shadow-[#E2136E]/30 btn-press mt-2 text-[15px] tracking-wide shimmer-bg flex items-center justify-center">
+                        উইথড্র রিকুয়েস্ট পাঠান
+                    </button>
+                </div>
+
+                <div class="mt-10">
+                    <h3 class="font-bold text-slate-800 text-[16px] mb-5 pl-1 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400 text-lg"></i> পেমেন্ট হিস্টোরি</h3>
+                    <div id="withdrawal-history" class="space-y-3.5">
+                        </div>
+                </div>
+            </div>
+
+            <div id="view-account" class="hidden pb-20">
+                <div class="glass rounded-[1.5rem] p-8 text-center shadow-sm mb-6 relative overflow-hidden border border-slate-100">
+                    <div class="absolute -top-10 -right-10 w-48 h-48 bg-[#E2136E] opacity-[0.08] rounded-full blur-3xl"></div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500 opacity-[0.08] rounded-full blur-3xl"></div>
+                    
+                    <div class="w-28 h-28 bg-white rounded-full mx-auto p-1.5 mb-5 shadow-lg border border-slate-50 relative z-10">
+                        <img id="profile-avatar" src="https://placehold.co/100" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <h2 class="font-bold text-2xl text-slate-800 tracking-tight relative z-10" id="profile-name">ব্যবহারকারী</h2>
+                    <div class="flex items-center justify-center gap-2 mt-2.5 relative z-10">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-4 py-1.5 rounded-lg font-inter font-bold border border-slate-200 shadow-sm tracking-widest uppercase">ID: <span id="profile-id" class="text-slate-800">...</span></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <a href="#" onclick="return enforceLinkActivation(event, 'gamee.html')" class="glass bg-gradient-to-br from-indigo-500 to-blue-600 rounded-[1.2rem] p-5 flex flex-col items-center justify-center text-center shadow-[0_10px_20px_rgba(79,70,229,0.25)] hover:shadow-xl transition-all btn-press animated-bg-gradient text-white relative overflow-hidden border border-white/20">
+                        <i class="fa-solid fa-gamepad text-4xl mb-3 animate-bounce drop-shadow-md"></i>
+                        <h4 class="font-extrabold text-[15px] tracking-wide">প্লে গেমস</h4>
+                        <p class="text-[10px] font-bold mt-1.5 opacity-90 bg-black/20 px-2 py-0.5 rounded text-white/90">বাজি ধরে জিতুন টাকা!</p>
+                    </a>
+                    <a href="#" onclick="return enforceLinkActivation(event, 'lottery.html')" class="glass bg-gradient-to-br from-purple-500 to-pink-600 rounded-[1.2rem] p-5 flex flex-col items-center justify-center text-center shadow-[0_10px_20px_rgba(217,70,239,0.25)] hover:shadow-xl transition-all btn-press animated-bg-gradient text-white relative overflow-hidden border border-white/20">
+                        <i class="fa-solid fa-ticket text-4xl mb-3 transform -rotate-12 drop-shadow-md"></i>
+                        <h4 class="font-extrabold text-[15px] tracking-wide">লটারি ড্র</h4>
+                        <p class="text-[10px] font-bold mt-1.5 opacity-90 bg-black/20 px-2 py-0.5 rounded text-white/90">ভাগ্য বদলে ফেলুন!</p>
+                    </a>
+                </div>
+
+                <div id="manual-ref-section" class="glass bg-white p-5 rounded-[1.2rem] mb-6 shadow-sm border border-slate-100 hidden">
+                    <h3 class="font-bold text-slate-800 text-[15px] mb-2 flex items-center gap-2"><i class="fa-solid fa-link text-[#E2136E]"></i> রেফার কোড বসান</h3>
+                    <p class="text-[13px] text-slate-500 mb-4 font-medium">লিংক কাজ না করলে আপনার বন্ধুর ID কোড হিসেবে এখানে দিন।</p>
+                    <div class="flex flex-row items-center gap-3 w-full">
+                        <input type="number" id="manual-ref-input" placeholder="রেফারার ID দিন" class="flex-1 w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[14px] focus:outline-none focus:border-[#E2136E] font-inter font-medium text-slate-800">
+                        <button onclick="submitManualReferral()" class="bg-slate-800 text-white h-12 px-5 rounded-xl text-sm font-bold shadow-md btn-press hover:bg-black transition flex-shrink-0 whitespace-nowrap">যুক্ত করুন</button>
+                    </div>
+                </div>
+
+                <div class="glass bg-gradient-to-r from-pink-50/50 to-rose-50/50 border border-pink-100 rounded-[1.5rem] p-6 mb-6 shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4 relative z-10">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-[16px]">বন্ধুদের ইনভাইট করুন</h3>
+                            <p class="text-[13px] text-slate-600 mt-1 font-medium">প্রতি রেফারে পাবেন ৳ <span id="ref-bonus-display" class="font-extrabold text-[#E2136E] text-[15px]">0</span></p>
+                            <div class="mt-3 flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-slate-600 bg-white px-3 py-1.5 rounded-lg border border-pink-100 shadow-sm uppercase tracking-wider">মোট রেফার: <span class="text-[#E2136E] text-[13px] font-inter ml-1" id="profile-total-ref">0</span></span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#E2136E] shadow-md border border-pink-50"><i class="fa-solid fa-gift animate-pulse text-lg"></i></div>
+                    </div>
+                    <div class="bg-white p-2 rounded-xl border border-pink-100 flex items-center gap-3 shadow-inner relative z-10">
+                        <p class="text-[13px] text-slate-500 truncate flex-1 font-inter pl-3 font-medium" id="ref-link">লোড হচ্ছে...</p>
+                        <button onclick="copyLink()" class="bg-[#E2136E] text-white text-[13px] px-6 py-3 rounded-lg font-bold btn-press shadow-md hover:bg-[#C10F5D] transition">কপি লিংক</button>
+                    </div>
+
+                    <div class="mt-5 relative z-10">
+                        <a href="#" onclick="return enforceLinkActivation(event, 'checkrefer.html')" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl btn-press flex items-center justify-center gap-2 text-[14px] shadow-md transition hover:bg-black">
+                            <i class="fa-solid fa-users-viewfinder"></i> রেফারেল লিস্ট ও স্ট্যাটাস দেখুন
+                        </a>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <a id="help-link" href="#" target="_blank" class="glass p-5 rounded-[1.2rem] flex items-center justify-between btn-press bg-white hover:bg-slate-50 border border-slate-100 shadow-sm transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 border border-orange-100"><i class="fa-solid fa-headset text-xl"></i></div>
+                            <span class="text-[16px] font-bold text-slate-800">হেল্প সেন্টার</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-sm pr-1"></i>
+                    </a>
+                    
+                    <button onclick="logoutUser()" class="w-full glass p-5 rounded-[1.2rem] flex items-center justify-between btn-press bg-white hover:bg-red-50 border border-red-100 shadow-sm transition">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-500 border border-red-100"><i class="fa-solid fa-right-from-bracket text-xl"></i></div>
+                            <span class="text-[16px] font-bold text-red-500">লগআউট করুন</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="glass absolute bottom-0 left-0 w-full h-20 px-6 flex justify-between items-start pt-3 z-50 rounded-t-3xl border-t border-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] bg-white/95">
+            <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center gap-1 w-12 transition-all duration-300" data-target="home">
+                <div class="nav-icon w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300"><i class="fa-solid fa-house text-lg"></i></div>
+                <span class="text-[10px] font-bold">হোম</span>
+            </button>
+            <button onclick="switchTab('vip')" class="nav-item text-slate-400 flex flex-col items-center gap-1 w-12 transition-all duration-300" data-target="vip">
+                <div class="nav-icon w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300"><i class="fa-solid fa-crown text-lg"></i></div>
+                <span class="text-[10px] font-bold">ভিআইপি</span>
+            </button>
+            <button onclick="switchTab('tasks')" class="nav-item relative -top-6 text-slate-400 flex flex-col items-center gap-1 w-12" data-target="tasks">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-[#E2136E] to-[#C10F5D] text-white shadow-[0_8px_20px_rgba(226,19,110,0.4)] flex items-center justify-center transform transition-transform active:scale-90 border-4 border-[#f8fafc]"><i class="fa-solid fa-list-check text-xl"></i></div>
+                <span class="text-[10px] font-bold mt-1.5 text-slate-500 uppercase tracking-wider">টাস্ক</span>
+            </button>
+            <button onclick="switchTab('withdraw')" class="nav-item text-slate-400 flex flex-col items-center gap-1 w-12 transition-all duration-300" data-target="withdraw">
+                <div class="nav-icon w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300"><i class="fa-solid fa-wallet text-lg"></i></div>
+                <span class="text-[10px] font-bold">ওয়ালেট</span>
+            </button>
+            <button onclick="switchTab('account')" class="nav-item text-slate-400 flex flex-col items-center gap-1 w-12 transition-all duration-300" data-target="account">
+                <div class="nav-icon w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300"><i class="fa-solid fa-user text-lg"></i></div>
+                <span class="text-[10px] font-bold">প্রোফাইল</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-[-60px] left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-5 py-3.5 rounded-full shadow-2xl transition-all duration-400 z-[140] flex items-center gap-3 min-w-[220px] justify-center border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-check-circle text-[#E2136E] text-lg"></i>
+        <span id="toast-msg" class="font-bold text-sm tracking-wide">সফল হয়েছে</span>
+    </div>
+
+    <script>
+        const BOT_USERNAME = "Bkash_Money_Cash_bot"; 
+        const BOT_APP_NAME = "app"; 
+        
+        const firebaseConfig = {
+  apiKey: "AIzaSyD4xfpfJluPH0hbXA1ygXG88JJ88iHmhOI",
+  authDomain: "gk-win.firebaseapp.com",
+  databaseURL: "https://gk-win-default-rtdb.firebaseio.com",
+  projectId: "gk-win",
+  storageBucket: "gk-win.firebasestorage.app",
+  messagingSenderId: "662763008068",
+  appId: "1:662763008068:web:b0e896318a0c90b0a90c11",
+  measurementId: "G-FJP3L7Z0LG"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth(); // Auth initialize করা হলো
+        const tg = window.Telegram.WebApp;
+
+        let refMilestones = [];
+        let tasksList = [];
+        let vipPackages = [];
+        let quizBank = [];
+        let weeklyTiers = [];
+
+        let appSettings = {
+            referralBonus: 2.00,
+            minWithdraw: 50,
+            activationFee: 20,
+            requireActivationForRefBonus: false, 
+            minRefForWithdraw: 2, 
+            helpLink: "https://t.me/YourSupport",
+            noticeText: "আমাদের অ্যাপে আপনাকে স্বাগতম!",
+            bkashNumber: "01XXXXXXXXX",
+            nagadNumber: "01XXXXXXXXX",
+            rocketNumber: "01XXXXXXXXX"
+        };
+
+        let currentUser = null;
+        let userData = JSON.parse(localStorage.getItem('cachedUserData')) || {}; 
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            tg.ready();
+            tg.expand();
+            tg.setHeaderColor('#ffffff');
+            tg.setBackgroundColor('#f8fafc');
+
+            if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+                 currentUser = { id: 123456, first_name: "Test User", username: "Tester", photo_url: "" }; 
+            } else {
+                 currentUser = tg.initDataUnsafe.user;
+            }
+
+            // নতুন: লগইন চেকিং সিস্টেম
+            auth.onAuthStateChanged(async (firebaseUser) => {
+                if (!firebaseUser) {
+                    // লগইন করা না থাকলে সোজা login.html এ রিডাইরেক্ট করে দিবে
+                    window.location.href = 'auth.html';
+                } else {
+                    // লগইন থাকলে অ্যাপ লোড হবে
+                    if(userData.id) updateUI(userData); 
+                    await checkAndCreateDefaults(); 
+                    await initApp();
+                }
+            });
+        });
+
+        // লগআউট ফাংশন
+        function logoutUser() {
+            showToast("লগআউট হচ্ছে...", "info");
+            auth.signOut().then(() => {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('cachedUserData');
+                window.location.href = 'auth.html';
+            }).catch((error) => {
+                showToast("সমস্যা হয়েছে!", "error");
+            });
+        }
+
+        function enforceActivation() {
+            if(!userData || !userData.isActive) {
+                showActivationNag();
+                return false;
+            }
+            return true;
+        }
+
+        function enforceLinkActivation(e, url) {
+            e.preventDefault();
+            if(!enforceActivation()) return false;
+            window.location.href = url;
+            return true;
+        }
+
+        async function checkAndCreateDefaults() {
+            try {
+                const vipSnap = await db.collection('vip_packages').limit(1).get();
+                if(vipSnap.empty) {
+                    await db.collection('vip_packages').doc('1').set({id: 1, name: "ভিআইপি প্ল্যান ১", price: 300, tasks: 2, validity: 10, dailyIncome: 50, totalIncome: 500, badge: "ডিফল্ট"});
+                }
+
+                const quizSnap = await db.collection('quiz_bank').limit(1).get();
+                if(quizSnap.empty) {
+                    await db.collection('quiz_bank').add({q: "বাংলাদেশের রাজধানীর নাম কী?", a: "ঢাকা", createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                }
+
+                const weeklySnap = await db.collection('weekly_bonuses').limit(1).get();
+                if(weeklySnap.empty) {
+                    await db.collection('weekly_bonuses').doc('tier1').set({refs: 20, reward: 100});
+                    await db.collection('weekly_bonuses').doc('tier2').set({refs: 40, reward: 200});
+                }
+            } catch(e) { console.error("Default creation error", e); }
+        }
+
+        async function initApp() {
+            try {
+                db.collection('appConfig').doc('settings').onSnapshot((doc) => {
+                    if (doc.exists) {
+                        appSettings = { ...appSettings, ...doc.data() };
+                        applyConfig();
+                    }
+                });
+
+                db.collection('vip_packages').orderBy('price', 'asc').onSnapshot(snap => {
+                    vipPackages = [];
+                    snap.forEach(doc => vipPackages.push({ docId: doc.id, ...doc.data() }));
+                    renderVIPPackages();
+                    if(userData.id) updateVipDashboard(userData);
+                });
+
+                db.collection('quiz_bank').onSnapshot(snap => {
+                    quizBank = [];
+                    snap.forEach(doc => quizBank.push({ id: doc.id, ...doc.data() }));
+                });
+
+                db.collection('weekly_bonuses').orderBy('refs', 'asc').onSnapshot(snap => {
+                    weeklyTiers = [];
+                    snap.forEach(doc => weeklyTiers.push({ id: doc.id, ...doc.data() }));
+                    if(userData.id) renderWeeklyBonus(userData);
+                });
+
+                db.collection('milestones').orderBy('target', 'asc').onSnapshot(snap => {
+                    refMilestones = [];
+                    snap.forEach(doc => refMilestones.push({ id: doc.id, ...doc.data() }));
+                    if(userData.id) renderMilestones(userData);
+                });
+
+                const userRef = db.collection('users').doc(currentUser.id.toString());
+                const userSnap = await userRef.get();
+
+                if (!userSnap.exists) {
+                    await createNewUser(userRef);
+                }
+
+                userRef.onSnapshot((doc) => {
+                    if(doc.exists) {
+                        userData = doc.data();
+                        localStorage.setItem('cachedUserData', JSON.stringify(userData)); 
+                        checkDailyReset();
+                        updateUI(userData);
+                    }
+                });
+
+                loadTasks();
+                setupWithdrawalHistory();
+                setInterval(updateCountdowns, 1000);
+
+                setTimeout(() => {
+                    const loader = document.getElementById('global-loader');
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 500);
+                    
+                    document.getElementById('app-container').classList.remove('hidden');
+                    
+                    if(!sessionStorage.getItem('welcomeShown')) {
+                        document.getElementById('welcome-modal').classList.remove('hidden');
+                        sessionStorage.setItem('welcomeShown', 'true');
+                    } else if (userData && !userData.isActive) {
+                        setTimeout(showActivationNag, 1000);
+                    }
+                }, 2000);
+
+            } catch (error) {
+                console.log("Error:", error);
+                showToast("ইন্টারনেট সংযোগ চেক করুন", "error");
+            }
+        }
+
+        async function createNewUser(userRef) {
+            const startParam = tg.initDataUnsafe?.start_param || "";
+            let referrerId = null;
+            if (startParam && startParam.startsWith('ref_')) referrerId = startParam.split('_')[1];
+
+            const initialData = {
+                id: currentUser.id,
+                username: currentUser.username || currentUser.first_name,
+                balance: 0.00,
+                pendingBonus: 0.00, 
+                referralCount: 0,
+                activeReferralCount: 0, 
+                totalIncome: 0.00,
+                isActive: false, 
+                currentVIP: null,
+                vipExpireDate: null,
+                dailyQuizCompleted: 0,
+                lastQuizDate: new Date().toISOString().split('T')[0],
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastWeeklyBonusDate: {}, 
+                completedTasks: [], 
+                completedDailyTasks: [], 
+                claimedMilestones: [], 
+                referredBy: referrerId
+            };
+
+            try {
+                await db.runTransaction(async (transaction) => {
+                    let refUserDoc = null;
+                    let refUserSnap = null;
+
+                    if (referrerId && referrerId !== currentUser.id.toString()) {
+                        refUserDoc = db.collection('users').doc(referrerId);
+                        refUserSnap = await transaction.get(refUserDoc);
+                    }
+
+                    transaction.set(userRef, initialData);
+
+                    if (refUserSnap && refUserSnap.exists) {
+                        const bonus = parseFloat(appSettings.referralBonus);
+                        const refData = refUserSnap.data();
+                        
+                        let updates = {
+                            referralCount: (refData.referralCount || 0) + 1
+                        };
+
+                        if (appSettings.requireActivationForRefBonus) {
+                            updates.pendingBonus = (refData.pendingBonus || 0) + bonus;
+                        } else {
+                            updates.balance = (refData.balance || 0) + bonus;
+                            updates.totalIncome = (refData.totalIncome || 0) + bonus;
+                            updates.activeReferralCount = (refData.activeReferralCount || 0) + 1; 
+                        }
+                        
+                        transaction.update(refUserDoc, updates);
+                    }
+                });
+            } catch (error) {
+                showToast("অ্যাকাউন্ট খুলতে সমস্যা হয়েছে!", "error");
+            }
+        }
+
+        function checkDailyReset() {
+            const today = new Date().toISOString().split('T')[0];
+            const uRef = db.collection('users').doc(currentUser.id.toString());
+            
+            let updates = {};
+            let needsUpdate = false;
+
+            if (userData.lastQuizDate !== today) {
+                updates.dailyQuizCompleted = 0;
+                updates.lastQuizDate = today;
+                updates.completedDailyTasks = [];
+                needsUpdate = true;
+            }
+
+            if (userData.currentVIP && userData.vipExpireDate) {
+                const expireDate = new Date(userData.vipExpireDate);
+                const now = new Date();
+                if (now > expireDate) {
+                    updates.currentVIP = null;
+                    updates.vipExpireDate = null;
+                    updates.dailyQuizCompleted = 0;
+                    needsUpdate = true;
+                }
+            }
+
+            if(needsUpdate) {
+                uRef.update(updates);
+            }
+        }
+
+        function applyConfig() {
+            document.getElementById('welcome-text').innerText = appSettings.noticeText;
+            document.getElementById('ref-bonus-display').innerText = appSettings.referralBonus;
+            document.getElementById('help-link').href = appSettings.helpLink;
+            
+            const fee = appSettings.activationFee || 20;
+            document.getElementById('nag-fee-amount').innerText = fee + ' টাকা';
+        }
+
+        function updateUI(data) {
+            const balanceTxt = `${parseFloat(data.balance).toFixed(2)}`;
+            
+            document.getElementById('header-balance').innerText = balanceTxt;
+            document.getElementById('header-username').innerText = data.username ? data.username.substring(0, 10) : 'User';
+            document.getElementById('home-balance').innerText = balanceTxt;
+            if(currentUser.photo_url) {
+                document.getElementById('user-avatar').src = currentUser.photo_url;
+                document.getElementById('profile-avatar').src = currentUser.photo_url;
+            }
+
+            const badge = document.getElementById('status-badge');
+            if(data.isActive) {
+                badge.className = "px-3.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5 shadow-sm bg-emerald-50 text-emerald-600 border-emerald-200 uppercase tracking-wider";
+                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Active';
+            } else {
+                badge.className = "px-3.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5 shadow-sm bg-red-50 text-red-500 border-red-200 uppercase tracking-wider";
+                badge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Inactive';
+            }
+
+            document.getElementById('stat-referral').innerText = data.referralCount || 0;
+            document.getElementById('profile-total-ref').innerText = data.referralCount || 0;
+
+            let vipPkgName = "ফ্রি ইউজার";
+            if(data.currentVIP) {
+                const p = vipPackages.find(x => x.id === data.currentVIP);
+                if(p) vipPkgName = p.name;
+            }
+            document.getElementById('stat-vip').innerText = vipPkgName;
+
+            document.getElementById('withdraw-balance').innerText = balanceTxt;
+            
+            document.getElementById('current-active-ref-count').innerText = data.activeReferralCount || 0;
+            document.getElementById('req-min-ref').innerText = appSettings.minRefForWithdraw || 2;
+            
+            if (!data.isActive) {
+                document.getElementById('withdraw-blocked-section').classList.remove('hidden');
+                document.getElementById('withdraw-form-view').classList.add('hidden');
+            } else {
+                document.getElementById('withdraw-blocked-section').classList.add('hidden');
+                document.getElementById('withdraw-form-view').classList.remove('hidden');
+            }
+
+            document.getElementById('profile-name').innerText = data.username;
+            document.getElementById('profile-id').innerText = data.id;
+
+            if(!data.referredBy) {
+                document.getElementById('manual-ref-section').classList.remove('hidden');
+            } else {
+                document.getElementById('manual-ref-section').classList.add('hidden');
+            }
+
+            const link = `https://t.me/${BOT_USERNAME}/${BOT_APP_NAME}?startapp=ref_${currentUser.id}`;
+            document.getElementById('ref-link').innerText = link;
+            
+            renderWeeklyBonus(data);
+            renderMilestones(data);
+            renderTasks();
+            updateVipDashboard(data);
+        }
+
+        function updateVipDashboard(data) {
+            const dashboard = document.getElementById('active-vip-dashboard');
+            const packagesTitle = document.getElementById('vip-packages-title');
+            
+            if(!data.currentVIP) {
+                dashboard.classList.add('hidden');
+                packagesTitle.classList.remove('hidden');
+                return;
+            }
+
+            dashboard.classList.remove('hidden');
+            packagesTitle.classList.remove('hidden');
+
+            const pkg = vipPackages.find(p => p.id === data.currentVIP);
+            if(!pkg) return;
+
+            document.getElementById('active-vip-name').innerText = pkg.name;
+            
+            let daysLeft = 0;
+            if(data.vipExpireDate) {
+                const end = new Date(data.vipExpireDate);
+                const now = new Date();
+                const diffTime = Math.abs(end - now);
+                daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+            document.getElementById('active-vip-expire').innerText = daysLeft;
+
+            const completed = data.dailyQuizCompleted || 0;
+            const total = pkg.tasks;
+            document.getElementById('active-vip-completed-tasks').innerText = completed;
+            document.getElementById('active-vip-total-tasks').innerText = total;
+
+            const progress = (completed / total) * 100;
+            document.getElementById('active-vip-progress').style.width = `${progress}%`;
+
+            const quizSection = document.getElementById('quiz-section');
+            const completedSection = document.getElementById('quiz-completed-section');
+
+            if(completed >= total) {
+                quizSection.classList.add('hidden');
+                completedSection.classList.remove('hidden');
+            } else {
+                quizSection.classList.remove('hidden');
+                completedSection.classList.add('hidden');
+                loadNewQuiz(pkg);
+            }
+        }
+
+        function loadNewQuiz(pkg) {
+            let questionText = "ডিফল্ট প্রশ্ন: বাংলাদেশের রাজধানী কী?";
+            if(quizBank.length > 0) {
+                const rIndex = Math.floor(Math.random() * quizBank.length);
+                questionText = quizBank[rIndex].q || quizBank[rIndex]; 
+            }
+            
+            document.getElementById('quiz-question').innerText = questionText;
+            document.getElementById('quiz-answer').value = '';
+            
+            const rewardPerTask = pkg.dailyIncome / pkg.tasks;
+            document.getElementById('quiz-reward-text').innerText = `রিওয়ার্ড: ৳${rewardPerTask.toFixed(2)}`;
+        }
+
+        async function submitQuizAnswer() {
+            if(!enforceActivation()) return;
+
+            const inputField = document.getElementById('quiz-answer');
+            const answer = inputField.value.trim();
+            const btn = document.getElementById('submit-quiz-btn');
+
+            if(!answer) return showToast("দয়া করে ইনপুট বক্সে কিছু লিখুন!", "error");
+
+            const pkg = vipPackages.find(p => p.id === userData.currentVIP);
+            if(!pkg) return;
+
+            const reward = pkg.dailyIncome / pkg.tasks;
+
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const uDoc = await t.get(uRef);
+                    const d = uDoc.data();
+
+                    if ((d.dailyQuizCompleted || 0) >= pkg.tasks) throw "Limit reached";
+
+                    t.update(uRef, {
+                        balance: d.balance + reward,
+                        totalIncome: d.totalIncome + reward,
+                        dailyQuizCompleted: (d.dailyQuizCompleted || 0) + 1,
+                        lastQuizDate: new Date().toISOString().split('T')[0]
+                    });
+                });
+                showToast(`উত্তর গৃহীত! ৳${reward.toFixed(2)} যোগ হয়েছে`, "success");
+            } catch (e) {
+                showToast("আজকের লিমিট শেষ", "error");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function renderWeeklyBonus(data) {
+            const container = document.getElementById('weekly-bonus-container');
+            if(weeklyTiers.length === 0) {
+                container.innerHTML = '<div class="text-center py-6 glass rounded-[1.2rem] border border-slate-100 text-xs text-slate-400 font-medium">অ্যাডমিন এখনও কোনো টার্গেট দেননি</div>';
+                return;
+            }
+
+            let html = '';
+            const refs = data.referralCount || 0;
+            const lastClaims = data.lastWeeklyBonusDate || {}; 
+            const now = Date.now();
+            const oneWeek = 7 * 24 * 60 * 60 * 1000; 
+
+            weeklyTiers.forEach(tier => {
+                const isEligible = refs >= tier.refs;
+                const progress = Math.min((refs / tier.refs) * 100, 100);
+                const lastClaimTime = lastClaims[tier.id] || 0;
+                const canClaimTime = (now - lastClaimTime) >= oneWeek;
+
+                let btnState = '';
+                let cardStyle = '';
+
+                if (isEligible && canClaimTime) {
+                    cardStyle = 'border-[#E2136E] bg-white shadow-[0_4px_20px_rgba(226,19,110,0.1)]';
+                    btnState = `<button onclick="claimWeeklyBonus('${tier.id}', ${tier.reward})" class="bg-gradient-to-r from-[#E2136E] to-[#C10F5D] text-white text-[11px] px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-[#E2136E]/40 btn-press transform active:scale-95 transition-all shimmer-bg whitespace-nowrap"><i class="fa-solid fa-hand-holding-dollar"></i> ক্লেইম করুন</button>`;
+                } else if (isEligible && !canClaimTime) {
+                    cardStyle = 'border-pink-100 bg-gradient-to-br from-pink-50/40 to-white opacity-95';
+                    btnState = `
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] text-[#E2136E] font-bold bg-pink-100/50 px-2.5 py-1 rounded-md border border-pink-200 mb-1.5 flex items-center gap-1"><i class="fa-solid fa-check-circle"></i> সম্পন্ন</span>
+                            <span id="timer-${tier.id}" data-time="${lastClaimTime + oneWeek}" class="text-[11px] text-slate-700 font-bold font-inter timer-element bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-sm flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-stopwatch text-[#f59e0b] animate-pulse"></i> 00:00:00</span>
+                        </div>`;
+                } else {
+                    cardStyle = 'border-slate-100 bg-slate-50/50';
+                    btnState = `<div class="bg-white text-slate-400 text-[11px] px-4 py-2.5 rounded-xl font-bold border border-slate-200 flex items-center gap-1.5 shadow-sm whitespace-nowrap"><i class="fa-solid fa-lock text-[10px]"></i> লকড</div>`;
+                }
+
+                html += `
+                <div class="p-5 rounded-[1.2rem] border ${cardStyle} relative overflow-hidden group transition-all duration-300">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-pink-100 to-orange-50 rounded-full opacity-40 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    
+                    <div class="flex justify-between items-center mb-5 relative z-10 gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-[0.8rem] bg-gradient-to-br from-orange-50 to-pink-50 flex items-center justify-center text-[#E2136E] shadow-sm border border-pink-100/50 flex-shrink-0">
+                                <i class="fa-solid fa-users text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-slate-800 text-[15px] tracking-tight leading-none">${tier.refs} রেফার টার্গেট</h4>
+                                <p class="text-[11px] font-bold text-[#f59e0b] mt-1.5 bg-orange-50 px-2 py-0.5 rounded text-center inline-block border border-orange-100 leading-none"><i class="fa-solid fa-gift"></i> বোনাস ৳ ${tier.reward}</p>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">${btnState}</div>
+                    </div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-end mb-2 pl-1 pr-1">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">অগ্রগতি</span>
+                            <span class="text-[11px] font-extrabold ${isEligible ? 'text-[#E2136E]' : 'text-slate-600'} bg-white px-2.5 py-1 rounded-md border border-slate-100 shadow-sm">${refs} / ${tier.refs} সম্পন্ন</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden shadow-inner p-[1px] border border-slate-200/50">
+                            <div class="bg-gradient-to-r from-[#f59e0b] via-[#ff4081] to-[#E2136E] h-full rounded-full transition-all duration-1000 relative" style="width: ${progress}%">
+                                <div class="absolute inset-0 bg-white/20 w-full transform -skew-x-12 translate-x-[-100%] animate-[shimmer-slide_2s_infinite]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateCountdowns() {
+            document.querySelectorAll('.timer-element').forEach(el => {
+                const targetTime = parseInt(el.getAttribute('data-time'));
+                const now = Date.now();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    el.innerHTML = "রেডি! পেজ রিফ্রেশ দিন";
+                    el.classList.replace('text-slate-700', 'text-green-500');
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                let timeStr = "";
+                if(days > 0) timeStr += `${days}d `;
+                timeStr += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                el.innerHTML = `<i class="fa-solid fa-stopwatch text-[#f59e0b] animate-pulse"></i> ${timeStr}`;
+            });
+        }
+
+        async function claimWeeklyBonus(tierId, reward) {
+            if(!enforceActivation()) return;
+
+            showToast("যাচাই করা হচ্ছে...", "info");
+            try {
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const uDoc = await t.get(uRef);
+                    const data = uDoc.data();
+                    
+                    const now = Date.now();
+                    const lastClaims = data.lastWeeklyBonusDate || {};
+                    const lastClaim = lastClaims[tierId] || 0;
+                    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+                    
+                    if (now - lastClaim < oneWeek) {
+                        throw "Already Claimed This Week";
+                    }
+
+                    let newLastClaims = { ...lastClaims, [tierId]: now };
+
+                    t.update(uRef, {
+                        balance: (data.balance || 0) + reward,
+                        totalIncome: (data.totalIncome || 0) + reward,
+                        lastWeeklyBonusDate: newLastClaims
+                    });
+                });
+                showToast(`সফলভাবে ৳ ${reward} সাপ্তাহিক বোনাস ক্লেইম করেছেন!`, "success");
+            } catch (e) {
+                showToast(e === "Already Claimed This Week" ? "এই সপ্তাহের বোনাস নেওয়া হয়েছে" : "সমস্যা হয়েছে, আবার চেষ্টা করুন", "error");
+            }
+        }
+
+        function renderMilestones(data) {
+            const container = document.getElementById('milestone-container');
+            const claimed = data.claimedMilestones || [];
+            const refs = data.referralCount || 0;
+
+            let nextMilestone = refMilestones.find(m => !claimed.includes(m.id));
+
+            if (!nextMilestone) {
+                container.innerHTML = `<div class="glass p-5 rounded-[1.2rem] text-center text-[#E2136E] font-bold text-sm border border-pink-100 shadow-sm">সবগুলো বোনাস ক্লেইম করা হয়েছে! 🎉</div>`;
+                return;
+            }
+
+            const isReady = refs >= nextMilestone.target;
+            const progress = Math.min((refs / nextMilestone.target) * 100, 100);
+
+            let actionBtn = isReady
+                ? `<button onclick="claimMilestone('${nextMilestone.id}', ${nextMilestone.reward})" class="mt-5 w-full bg-[#E2136E] text-white font-bold py-4 rounded-xl shadow-lg btn-press flex items-center justify-center gap-2 tracking-wide shimmer-bg"><i class="fa-solid fa-gift"></i> ৳ ${nextMilestone.reward} ক্লেইম করুন!</button>`
+                : `<div class="mt-5 w-full bg-slate-50 text-slate-400 font-bold py-4 rounded-xl text-center text-xs border border-slate-200">আরও ${nextMilestone.target - refs} টি রেফার প্রয়োজন</div>`;
+
+            container.innerHTML = `
+                <div class="glass bg-white p-6 rounded-[1.5rem] border border-slate-100 relative overflow-hidden shadow-sm">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-50 rounded-full opacity-60 blur-2xl"></div>
+                    <div class="flex justify-between items-end mb-4 relative z-10">
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">টার্গেট</p>
+                            <span class="text-[15px] font-bold text-slate-700 font-inter">${nextMilestone.target} রেফার</span>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">পুরস্কার</p>
+                            <span class="text-[15px] font-bold text-[#E2136E] font-inter">+৳ ${nextMilestone.reward}</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative z-10 shadow-inner border border-slate-200/50 p-[1px]">
+                        <div class="bg-gradient-to-r from-[#E2136E] to-[#ff4081] h-full rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                    </div>
+                    ${actionBtn}
+                </div>
+            `;
+        }
+
+        async function claimMilestone(mId, reward) {
+            if(!enforceActivation()) return;
+
+            showToast("যাচাই করা হচ্ছে...", "info");
+            try {
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const uDoc = await t.get(uRef);
+                    const data = uDoc.data();
+                    const claimed = data.claimedMilestones || [];
+
+                    if (claimed.includes(mId)) throw "Already claimed";
+
+                    t.update(uRef, {
+                        balance: data.balance + reward,
+                        totalIncome: data.totalIncome + reward,
+                        claimedMilestones: [...claimed, mId]
+                    });
+                });
+                showToast(`কনগ্রাচুলেশনস! ৳ ${reward} যোগ হয়েছে 🎉`, "success");
+            } catch (e) {
+                showToast("দুঃখিত, সমস্যা হয়েছে", "error");
+            }
+        }
+
+        function loadTasks() {
+            db.collection('tasks').onSnapshot(snap => {
+                tasksList = [];
+                snap.forEach(doc => tasksList.push({ id: doc.id, ...doc.data() }));
+                renderTasks();
+            });
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-list');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            let pendingTasks = [];
+            let completedTasks = [];
+
+            tasksList.forEach(task => {
+                if (task.startDate && task.startDate > todayStr) return; 
+
+                const isOneTimeDone = userData.completedTasks && userData.completedTasks.includes(task.id);
+                const isDailyDone = userData.completedDailyTasks && userData.completedDailyTasks.includes(task.id);
+                
+                if(task.type !== 'daily' && isOneTimeDone) return;
+
+                if (isDailyDone || isOneTimeDone) {
+                    completedTasks.push(task); 
+                } else {
+                    pendingTasks.push(task); 
+                }
+            });
+
+            const sortedTasks = [...pendingTasks, ...completedTasks];
+
+            if(sortedTasks.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 glass rounded-2xl border border-slate-100"><p class="text-sm text-slate-400 font-medium">নতুন কোনো টাস্ক নেই</p></div>';
+                return;
+            }
+
+            sortedTasks.forEach(task => {
+                const isOneTimeDone = userData.completedTasks && userData.completedTasks.includes(task.id);
+                const isDailyDone = userData.completedDailyTasks && userData.completedDailyTasks.includes(task.id);
+                const isCompleted = isOneTimeDone || isDailyDone;
+                
+                const taskTypeBadge = task.type === 'daily' 
+                    ? `<span class="text-[9px] uppercase tracking-wider bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded border border-indigo-100 flex-shrink-0 font-extrabold">Daily</span>`
+                    : `<span class="text-[9px] uppercase tracking-wider bg-emerald-50 text-emerald-500 px-2 py-0.5 rounded border border-emerald-100 flex-shrink-0 font-extrabold">One Time</span>`;
+
+                const div = document.createElement('div');
+                div.className = `bg-white p-5 rounded-[1.2rem] flex items-center justify-between gap-4 transition-all border border-slate-100 shadow-sm ${isCompleted ? 'opacity-60 grayscale order-last' : 'hover:shadow-md active:scale-95'}`;
+                
+                const btnState = isCompleted 
+                    ? `<span class="text-slate-400 font-bold text-[11px] flex items-center gap-1.5 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100"><i class="fa-solid fa-check"></i> Done</span>` 
+                    : `<button onclick="doTask('${task.id}', '${task.link}', ${task.reward}, '${task.type}')" class="bg-gradient-to-r from-[#E2136E] to-[#C10F5D] text-white text-[12px] px-5 py-3 rounded-xl font-bold shadow-md shadow-[#E2136E]/30 btn-press flex-shrink-0 whitespace-nowrap shimmer-bg">শুরু করুন</button>`;
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 p-1.5 flex-shrink-0 shadow-sm">
+                            <img src="${task.img || 'https://cdn-icons-png.flaticon.com/512/2098/2098402.png'}" class="w-full h-full rounded-[0.4rem] object-cover">
+                        </div>
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1 w-full">
+                                <h4 class="font-bold text-slate-800 text-[15px] truncate">${task.title}</h4>
+                                ${taskTypeBadge}
+                            </div>
+                            <p class="text-[13px] text-[#E2136E] font-bold font-inter">+ ৳ ${parseFloat(task.reward).toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 pl-1">${btnState}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function doTask(taskId, link, reward, taskType) {
+            if(!enforceActivation()) return;
+
+            tg.openLink(link);
+            showToast("যাচাই করা হচ্ছে...", "info");
+            setTimeout(async () => {
+                try {
+                     await db.runTransaction(async (t) => {
+                        const uRef = db.collection('users').doc(currentUser.id.toString());
+                        const uDoc = await t.get(uRef);
+                        const uData = uDoc.data();
+
+                        let updateData = {
+                            balance: uData.balance + parseFloat(reward),
+                            totalIncome: uData.totalIncome + parseFloat(reward)
+                        };
+
+                        if (taskType === 'daily') {
+                            if (uData.completedDailyTasks && uData.completedDailyTasks.includes(taskId)) throw "Already completed today";
+                            updateData.completedDailyTasks = [...(uData.completedDailyTasks || []), taskId];
+                        } else {
+                            if (uData.completedTasks && uData.completedTasks.includes(taskId)) throw "Already completed";
+                            updateData.completedTasks = [...(uData.completedTasks || []), taskId];
+                        }
+
+                        t.update(uRef, updateData);
+                    });
+                    showToast(`টাস্ক সম্পন্ন! +৳ ${reward}`, "success");
+                } catch (e) {
+                    showToast("ইতিমধ্যে সম্পন্ন করেছেন", "error");
+                }
+            }, 5000);
+        }
+
+        function renderVIPPackages() {
+            const container = document.getElementById('vip-packages-list');
+            if(vipPackages.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 glass rounded-2xl border border-slate-100 text-slate-400 font-medium">কোনো প্যাকেজ নেই</div>';
+                return;
+            }
+            
+            let html = '';
+            vipPackages.forEach(pkg => {
+                let badgeHtml = '';
+                if(pkg.badge) {
+                    badgeHtml = `<div class="ribbon-wrapper"><div class="ribbon">${pkg.badge}</div></div>`;
+                }
+
+                html += `
+                <div class="glass bg-white p-6 rounded-[1.5rem] border-2 border-orange-100 shadow-sm relative overflow-hidden transition-shadow hover:shadow-md">
+                    ${badgeHtml}
+                    <div class="flex justify-between items-start mb-5">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-[15px]">${pkg.name}</h3>
+                            <h2 class="text-3xl font-extrabold text-[#f59e0b] font-inter mt-1.5 drop-shadow-sm">৳${pkg.price}</h2>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl flex items-center justify-center text-[#f59e0b] shadow-sm border border-orange-100/50">
+                            <i class="fa-solid fa-gem text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
+                        <p class="text-sm text-slate-600 flex justify-between font-medium"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> দৈনিক এআই টাস্ক:</span> <span class="font-bold">${pkg.tasks} টি</span></p>
+                        <p class="text-sm text-slate-600 flex justify-between font-medium"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> মেয়াদ:</span> <span class="font-bold">${pkg.validity} দিন</span></p>
+                        <p class="text-sm text-slate-600 flex justify-between font-medium"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> মোট আয়:</span> <span class="font-extrabold text-emerald-600">৳${pkg.totalIncome}</span></p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="openVipDetails(${pkg.id})" class="flex-1 bg-white text-[#f59e0b] font-bold py-3.5 rounded-xl btn-press border border-orange-200 hover:bg-orange-50 transition text-sm">বিস্তারিত</button>
+                        <button onclick="upgradeVIP(${pkg.id})" class="flex-[2] bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white font-bold py-3.5 rounded-xl btn-press shadow-lg shadow-[#f59e0b]/30 tracking-wide text-sm shimmer-bg">
+                            আপগ্রেড করুন
+                        </button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function openVipDetails(id) {
+            const pkg = vipPackages.find(p => p.id === id);
+            if(!pkg) return;
+
+            document.getElementById('modal-vip-title').innerText = `${pkg.name} বিস্তারিত`;
+            document.getElementById('modal-vip-price').innerText = `৳${pkg.price}`;
+            document.getElementById('modal-vip-tasks').innerText = `${pkg.tasks} টি`;
+            document.getElementById('modal-vip-validity').innerText = `${pkg.validity} দিন`;
+            document.getElementById('modal-vip-daily').innerText = `৳${pkg.dailyIncome.toFixed(2)}`;
+            document.getElementById('modal-vip-total').innerText = `৳${pkg.totalIncome}`;
+
+            const modal = document.getElementById('vip-details-modal');
+            const content = document.getElementById('vip-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeVipDetails() {
+            const modal = document.getElementById('vip-details-modal');
+            const content = document.getElementById('vip-modal-content');
+            
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function upgradeVIP(id) {
+            if(!enforceActivation()) return;
+            
+            const pkg = vipPackages.find(p => p.id === id);
+            
+            if(userData.currentVIP) {
+                return showToast("আপনার ইতিমধ্যে একটি অ্যাক্টিভ প্ল্যান আছে!", "error");
+            }
+
+            const url = `premium_pay.html?pkgId=${pkg.id}&price=${pkg.price}&name=${encodeURIComponent(pkg.name)}`;
+            window.location.href = url;
+        }
+
+        function selectGateway(btn, method) {
+            document.querySelectorAll('.gateway-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('selected-gateway').value = method;
+        }
+
+        function selectAmount(btn, amount) {
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('selected-amount').value = amount;
+        }
+
+        async function processWithdraw() {
+            if(!enforceActivation()) return;
+
+            const minReq = appSettings.minRefForWithdraw || 2;
+            if((userData.activeReferralCount || 0) < minReq) {
+                return showToast(`অন্তত ${minReq}টি অ্যাক্টিভ রেফার প্রয়োজন`, "error"); 
+            }
+
+            const amountVal = document.getElementById('selected-amount').value;
+            const amount = parseFloat(amountVal);
+            const number = document.getElementById('withdraw-number').value;
+            const method = document.getElementById('selected-gateway').value;
+
+            if (!amountVal || isNaN(amount)) return showToast("পরিমাণ (Amount) সিলেক্ট করুন", "error");
+            if (amount > userData.balance) return showToast("পর্যাপ্ত ব্যালেন্স নেই", "error");
+            if (!number || number.length < 9) return showToast("সঠিক নাম্বার দিন", "error");
+            if (!method) return showToast("মেথড সিলেক্ট করুন", "error");
+
+            const btn = document.querySelector('button[onclick="processWithdraw()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "<div class='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto'></div>";
+            btn.disabled = true;
+
+            try {
+                await db.runTransaction(async (t) => {
+                    const uRef = db.collection('users').doc(currentUser.id.toString());
+                    const uDoc = await t.get(uRef);
+                    if (uDoc.data().balance < amount) throw "Insufficient Balance";
+                    
+                    t.update(uRef, { balance: uDoc.data().balance - amount });
+                    
+                    const wRef = db.collection('withdrawals').doc();
+                    t.set(wRef, {
+                        userId: currentUser.id.toString(),
+                        username: userData.username,
+                        amount: amount,
+                        method: method,
+                        number: number,
+                        status: 'pending',
+                        date: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                showToast("রিকুয়েস্ট পাঠানো হয়েছে!", "success");
+                document.getElementById('selected-amount').value = "";
+                document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('withdraw-number').value = "";
+            } catch (e) {
+                showToast("সমস্যা হয়েছে, আবার চেষ্টা করুন", "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function setupWithdrawalHistory() {
+            db.collection('withdrawals')
+              .where('userId', '==', currentUser.id.toString())
+              .orderBy('date', 'desc')
+              .limit(10)
+              .onSnapshot(snap => {
+                  const div = document.getElementById('withdrawal-history');
+                  div.innerHTML = '';
+                  if(snap.empty) {
+                      div.innerHTML = '<div class="text-center py-6 glass rounded-2xl border border-slate-100"><p class="text-sm text-slate-400 font-medium">কোনো হিস্টোরি নেই</p></div>';
+                      return;
+                  }
+                  snap.forEach(doc => {
+                      const d = doc.data();
+                      let statusText = "পেন্ডিং";
+                      let statusClass = "text-amber-600 bg-amber-50 border-amber-100";
+                      
+                      if(d.status === 'approved') {
+                          statusText = "সফল";
+                          statusClass = "text-emerald-600 bg-emerald-50 border-emerald-100";
+                      } else if (d.status === 'rejected') {
+                          statusText = "বাতিল";
+                          statusClass = "text-red-600 bg-red-50 border-red-100";
+                      }
+
+                      let iconSrc = d.method === 'Bkash' ? 'bkash.png' : d.method === 'Nagad' ? 'nagad.png' : 'rocket.png';
+
+                      const html = `
+                        <div class="glass bg-white p-4 rounded-[1.2rem] flex justify-between items-center border border-slate-100 shadow-sm hover:shadow-md transition">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner">
+                                    <img src="${iconSrc}" class="w-5 h-5 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <i class="fa-solid fa-money-bill-wave text-slate-400 text-sm hidden"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">${d.method}</p>
+                                    <p class="text-[13px] font-bold text-slate-700 font-inter">${d.number}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[15px] font-bold text-slate-800 font-inter mb-1.5">৳ ${d.amount}</p>
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-md border ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>`;
+                      div.innerHTML += html;
+                  });
+              });
+        }
+
+        async function submitManualReferral() {
+            if(!enforceActivation()) return;
+
+            const refId = document.getElementById('manual-ref-input').value.trim();
+            if(!refId) return showToast("ID দিন", "error");
+            if(refId === currentUser.id.toString()) return showToast("নিজের কোড ব্যবহার করা যাবে্বা না", "error");
+
+            const btn = document.querySelector('#manual-ref-section button');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                await db.runTransaction(async (t) => {
+                    const myRef = db.collection('users').doc(currentUser.id.toString());
+                    const myDoc = await t.get(myRef);
+                    if(myDoc.data().referredBy) throw "Already referred";
+
+                    const referrerRef = db.collection('users').doc(refId);
+                    const referrerDoc = await t.get(referrerRef);
+                    if(!referrerDoc.exists) throw "Invalid code";
+
+                    const bonus = parseFloat(appSettings.referralBonus || 2.00);
+                    const refData = referrerDoc.data();
+
+                    let updates = {
+                        referralCount: (refData.referralCount || 0) + 1
+                    };
+
+                    if (appSettings.requireActivationForRefBonus) {
+                        updates.pendingBonus = (refData.pendingBonus || 0) + bonus;
+                    } else {
+                        updates.balance = (refData.balance || 0) + bonus;
+                        updates.totalIncome = (refData.totalIncome || 0) + bonus;
+                        updates.activeReferralCount = (refData.activeReferralCount || 0) + 1; 
+                    }
+
+                    t.update(referrerRef, updates);
+                    t.update(myRef, { referredBy: refId });
+                });
+                showToast("রেফার কোড সফলভাবে যুক্ত হয়েছে!", "success");
+            } catch (e) {
+                showToast(e === "Invalid code" ? "ভুল রেফার কোড" : "আপনি ইতিমধ্যে রেফার হয়েছেন", "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                if(btn.dataset.target === tabId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            document.getElementById('main-content').scrollTop = 0;
+
+            if (!userData.isActive && tabId !== 'activate') {
+                showActivationNag();
+            }
+        }
+
+        function goToActivation() {
+            window.location.href = 'activation.html';
+        }
+
+        function showActivationNag() {
+            document.getElementById('activation-nag-modal').classList.remove('hidden');
+            document.getElementById('activation-nag-modal').querySelector('div').classList.remove('scale-95');
+        }
+
+        function closeActivationNag() {
+            document.getElementById('activation-nag-modal').classList.add('hidden');
+        }
+
+        function copyLink() {
+            const link = document.getElementById('ref-link').innerText;
+            navigator.clipboard.writeText(link);
+            showToast("লিংক কপি হয়েছে!", "info");
+        }
+
+        function closeModal() {
+            document.getElementById('welcome-modal').classList.add('hidden');
+            if(userData && !userData.isActive) {
+                setTimeout(showActivationNag, 800);
+            }
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const i = document.getElementById('toast-icon');
+            
+            i.className = type === 'error' ? 'fa-solid fa-circle-exclamation text-red-400 text-lg' :
+                          type === 'info' ? 'fa-solid fa-circle-info text-blue-400 text-lg' :
+                          'fa-solid fa-check-circle text-[#E2136E] text-lg';
+            
+            t.style.top = '30px';
+            setTimeout(() => t.style.top = '-80px', 3000);
+        }
+    </script>
+</body>
+</html>
