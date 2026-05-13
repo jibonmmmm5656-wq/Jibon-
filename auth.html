@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>লগইন | Bᴋᴀsʜ Mᴏɴᴇʏ Cᴀsʜ</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script> 
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bkash-pink: #E2136E; 
+            --bkash-dark: #C10F5D;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            -webkit-tap-highlight-color: transparent;
+            color: #1e293b;
+        }
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+        }
+        .btn-press:active { transform: scale(0.96); }
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon {
+            position: absolute;
+            left: 1.25rem;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        .input-field {
+            width: 100%; height: 3.5rem; background-color: #f8fafc; border: 1.5px solid #e2e8f0; 
+            border-radius: 1rem; padding: 0 1.25rem 0 3.25rem; font-size: 0.95rem; transition: all 0.3s;
+            font-family: 'Inter', sans-serif; font-weight: 500; color: #334155;
+        }
+        .input-field:focus { 
+            outline: none; border-color: var(--bkash-pink); background-color: white; 
+            box-shadow: 0 0 0 4px rgba(226, 19, 110, 0.1); 
+        }
+        .input-field:focus + .input-icon, .input-field:focus ~ .input-icon {
+            color: var(--bkash-pink);
+        }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center p-4">
+
+    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md">
+        <div class="w-16 h-16 border-4 border-pink-100 border-t-[#E2136E] rounded-full animate-spin mb-4"></div>
+        <p class="font-bold text-slate-700 tracking-wide text-lg animate-pulse">অ্যাকাউন্ট চেক করা হচ্ছে...</p>
+    </div>
+
+    <div class="glass w-full max-w-sm rounded-[2rem] p-8 relative overflow-hidden hidden transform transition-all duration-500 scale-95 opacity-0" id="auth-container">
+        
+        <div class="text-center mb-8 relative z-10">
+            <div class="w-16 h-16 bg-gradient-to-tr from-[#E2136E] to-[#C10F5D] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_10px_20px_rgba(226,19,110,0.3)] transform rotate-3">
+                <i class="fa-solid fa-wallet text-white text-3xl transform -rotate-3"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight" id="form-title">স্বাগতম!</h2>
+        </div>
+
+        <div id="login-form" class="hidden space-y-4 relative z-10">
+            <p class="text-[13px] text-slate-500 text-center mb-5 font-bold uppercase tracking-widest">অ্যাকাউন্টে প্রবেশ করুন</p>
+            
+            <div class="input-group">
+                <input type="email" id="login-email" class="input-field peer" placeholder="আপনার ইমেইল">
+                <i class="fa-solid fa-envelope input-icon"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" class="input-field peer" placeholder="আপনার পাসওয়ার্ড">
+                <i class="fa-solid fa-lock input-icon"></i>
+            </div>
+            
+            <button onclick="loginUser()" class="w-full bg-gradient-to-r from-[#E2136E] to-[#C10F5D] text-white font-bold h-14 rounded-[1rem] shadow-lg shadow-[#E2136E]/30 btn-press transition flex items-center justify-center gap-2 mt-4 text-[15px]">
+                <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
+            </button>
+        </div>
+
+        <div id="register-form" class="hidden space-y-4 relative z-10">
+            <p class="text-[13px] text-slate-500 text-center mb-5 font-bold uppercase tracking-widest">নতুন অ্যাকাউন্ট খুলুন</p>
+            
+            <div class="input-group">
+                <input type="email" id="reg-email" class="input-field peer" placeholder="আপনার সঠিক ইমেইল দিন">
+                <i class="fa-solid fa-envelope input-icon"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" id="reg-password" class="input-field peer" placeholder="পাসওয়ার্ড দিন (অন্তত ৬ অক্ষর)">
+                <i class="fa-solid fa-lock input-icon"></i>
+            </div>
+            
+            <button onclick="registerUser()" class="w-full bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white font-bold h-14 rounded-[1rem] shadow-lg shadow-orange-500/30 btn-press transition flex items-center justify-center gap-2 mt-4 text-[15px]">
+                <i class="fa-solid fa-user-plus"></i> রেজিস্ট্রেশন সম্পন্ন করুন
+            </button>
+        </div>
+
+        <div id="setup-form" class="hidden space-y-4 relative z-10">
+            <div class="bg-amber-50 border border-amber-200 p-5 rounded-2xl mb-5 text-center shadow-inner">
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-shield-halved text-amber-500 text-xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-[15px] mb-1">অ্যাকাউন্টের নিরাপত্তা আপডেট!</h3>
+                <p class="text-[12px] text-slate-600 leading-relaxed font-medium">আপনার আগের ডাটা এবং ব্যালেন্স সুরক্ষিত রাখতে অনুগ্রহ করে আপনার ইমেইল ও একটি পাসওয়ার্ড সেট করুন।</p>
+            </div>
+            
+            <div class="input-group">
+                <input type="email" id="setup-email" class="input-field peer" placeholder="আপনার সঠিক ইমেইল দিন">
+                <i class="fa-solid fa-envelope input-icon"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" id="setup-password" class="input-field peer" placeholder="নতুন পাসওয়ার্ড তৈরি করুন">
+                <i class="fa-solid fa-lock input-icon"></i>
+            </div>
+            
+            <button onclick="setupExistingUser()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold h-14 rounded-[1rem] shadow-lg shadow-emerald-500/30 btn-press transition flex items-center justify-center gap-2 mt-4 text-[15px]">
+                <i class="fa-solid fa-lock"></i> নিরাপদ করুন
+            </button>
+        </div>
+
+    </div>
+
+    <div id="toast" class="fixed top-[-60px] left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3.5 rounded-full shadow-2xl transition-all duration-400 z-[140] flex items-center gap-3 min-w-[240px] justify-center border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-info-circle text-blue-400 text-lg"></i>
+        <span id="toast-msg" class="font-bold text-sm tracking-wide">ম্যাসেজ</span>
+    </div>
+
+    <script>
+        // তোমার ফায়ারবেস কনফিগারেশন হুবহু বসাও
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQx2KtuYvYozwfSyKTbQ41S9H-Nxg4nkA",
+            authDomain: "bkash-pay-542ba.firebaseapp.com",
+            projectId: "bkash-pay-542ba",
+            storageBucket: "bkash-pay-542ba.firebasestorage.app",
+            messagingSenderId: "139557746694",
+            appId: "1:139557746694:web:a25b55a4af0b2a642b2b87"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const tg = window.Telegram.WebApp;
+
+        let currentUserTgId = null;
+
+        // ইমেইল সঠিক ফরমেটে আছে কি না তা যাচাই করার স্মার্ট ফাংশন
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            tg.ready();
+            tg.expand();
+            
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                currentUserTgId = tg.initDataUnsafe.user.id.toString();
+            } else {
+                currentUserTgId = "123456"; // টেস্টিং আইডি
+            }
+
+            checkUserStatus();
+        });
+
+        async function checkUserStatus() {
+            try {
+                const userRef = db.collection('users').doc(currentUserTgId);
+                const doc = await userRef.get();
+
+                // লোডার সরানো এবং এনিমেশনসহ মেইন কন্টেইনার দেখানো
+                document.getElementById('loader').classList.add('hidden');
+                const authContainer = document.getElementById('auth-container');
+                authContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    authContainer.classList.remove('scale-95', 'opacity-0');
+                    authContainer.classList.add('scale-100', 'opacity-100');
+                }, 50);
+
+                if (doc.exists) {
+                    const userData = doc.data();
+                    if (!userData.email) { 
+                        // শর্ত ১: পুরাতন ইউজার, কিন্তু ইমেইল সেট করেনি
+                        showForm('setup-form', 'নিরাপত্তা আপডেট');
+                    } else {
+                        // শর্ত ২: পুরাতন ইউজার, ইমেইল সেট করা আছে
+                        showForm('login-form', 'ফিরে আসার জন্য ধন্যবাদ');
+                    }
+                } else {
+                    // শর্ত ৩: একদম নতুন ইউজার
+                    showForm('register-form', 'নতুন অ্যাকাউন্ট');
+                }
+            } catch (error) {
+                showToast("ইন্টারনেট কানেকশন চেক করুন!", "error");
+            }
+        }
+
+        function showForm(formId, title) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('setup-form').classList.add('hidden');
+            
+            document.getElementById(formId).classList.remove('hidden');
+            document.getElementById('form-title').innerText = title;
+        }
+
+        // লগইন ফাংশন
+        async function loginUser() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            
+            if(!isValidEmail(email)) return showToast("দয়া করে একটি সঠিক ইমেইল দিন", "error");
+            if(!pass) return showToast("পাসওয়ার্ড দিন", "error");
+
+            showToast("লগইন হচ্ছে...", "info");
+            try {
+                await auth.signInWithEmailAndPassword(email, pass);
+                successRedirect(email);
+            } catch (error) {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    showToast("ইমেইল বা পাসওয়ার্ড ভুল হয়েছে!", "error");
+                } else {
+                    showToast("লগইন ব্যর্থ হয়েছে, আবার চেষ্টা করুন।", "error");
+                }
+            }
+        }
+
+        // নতুন ইউজার রেজিস্ট্রেশন ফাংশন
+        async function registerUser() {
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-password').value.trim();
+            
+            if(!isValidEmail(email)) return showToast("দয়া করে একটি সঠিক ইমেইল দিন", "error");
+            if(pass.length < 6) return showToast("পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে", "error");
+
+            showToast("অ্যাকাউন্ট তৈরি হচ্ছে...", "info");
+            try {
+                // ১. ফায়ারবেস অথেনটিকেশনে একাউন্ট তৈরি
+                await auth.createUserWithEmailAndPassword(email, pass);
+                
+                // ২. ডাটাবেসে ইউজার ডাটা সেভ
+                await db.collection('users').doc(currentUserTgId).set({
+                    id: currentUserTgId,
+                    email: email,
+                    username: tg.initDataUnsafe?.user?.username || tg.initDataUnsafe?.user?.first_name || "User",
+                    balance: 0.00,
+                    referralCount: 0,
+                    isActive: false,
+                    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!", "success");
+                setTimeout(() => successRedirect(email), 1000);
+            } catch (error) {
+                // স্মার্ট এরর হ্যান্ডলিং
+                if(error.code === 'auth/email-already-in-use') {
+                    showToast("এই ইমেইলটি আগেই ব্যবহৃত হয়েছে! অন্য ইমেইল দিন।", "error");
+                } else if(error.code === 'auth/operation-not-allowed') {
+                    showToast("ফায়ারবেসে Email/Password চালু করা নেই!", "error");
+                } else {
+                    showToast("সার্ভার এরর: " + error.message, "error");
+                }
+            }
+        }
+
+        // পুরাতন ইউজারের সিকিউরিটি সেটআপ ফাংশন
+        async function setupExistingUser() {
+            const email = document.getElementById('setup-email').value.trim();
+            const pass = document.getElementById('setup-password').value.trim();
+            
+            if(!isValidEmail(email)) return showToast("দয়া করে একটি সঠিক ইমেইল দিন", "error");
+            if(pass.length < 6) return showToast("পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে", "error");
+
+            showToast("নিরাপত্তা আপডেট হচ্ছে...", "info");
+            try {
+                // ১. ফায়ারবেস অথেনটিকেশনে একাউন্ট তৈরি
+                await auth.createUserWithEmailAndPassword(email, pass);
+                
+                // ২. তার আগের ডাটায় শুধু ইমেইলটা আপডেট করে দেওয়া হলো
+                await db.collection('users').doc(currentUserTgId).update({
+                    email: email 
+                });
+
+                showToast("অ্যাকাউন্ট সুরক্ষিত করা হয়েছে!", "success");
+                setTimeout(() => successRedirect(email), 1000);
+            } catch (error) {
+                // স্মার্ট এরর হ্যান্ডলিং
+                if(error.code === 'auth/email-already-in-use') {
+                    showToast("এই ইমেইলটি অন্য একটি অ্যাকাউন্টে ব্যবহৃত হচ্ছে!", "error");
+                } else if(error.code === 'auth/operation-not-allowed') {
+                    showToast("ফায়ারবেসে Email/Password চালু করা নেই!", "error");
+                } else {
+                    showToast("সার্ভার এরর: " + error.message, "error");
+                }
+            }
+        }
+
+        // লগইন/রেজিস্টার সফল হলে ড্যাশবোর্ডে পাঠানো
+        function successRedirect(email) {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userEmail', email);
+            window.location.href = 'index.html'; 
+        }
+
+        // সুন্দর টোস্ট নোটিফিকেশন সিস্টেম
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const i = document.getElementById('toast-icon');
+            
+            i.className = type === 'error' ? 'fa-solid fa-circle-exclamation text-red-400 text-lg' :
+                          type === 'info' ? 'fa-solid fa-spinner fa-spin text-blue-400 text-lg' :
+                          'fa-solid fa-check-circle text-[#E2136E] text-lg';
+            
+            t.style.top = '30px';
+            setTimeout(() => t.style.top = '-80px', 3000);
+        }
+    </script>
+</body>
+</html>
