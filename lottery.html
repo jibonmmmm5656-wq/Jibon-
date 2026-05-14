@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lottery Draw - Mystery Box</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bkash-pink: #E2136E; 
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+        body { 
+            font-family: 'Hind Siliguri', 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
+            color: #1e293b; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .glass { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .btn-press:active { transform: scale(0.96); transition: transform 0.1s; }
+
+        /* Auto-resizing Balance Container */
+        .balance-pill {
+            display: flex; align-items: center;
+            background: rgba(226, 19, 110, 0.08);
+            border: 1px solid rgba(226, 19, 110, 0.15);
+            border-radius: 9999px; padding: 4px 12px; max-width: 150px;
+        }
+
+        /* =========================================
+           TV BOX & RGB BORDER EFFECTS
+        ========================================= */
+        .rgb-wrapper {
+            position: relative;
+            padding: 6px;
+            border-radius: 24px;
+            background: linear-gradient(90deg, #ff0000, #ffff00, #ff00f3, #0033ff, #ff00c4, #ff0000);
+            background-size: 400%;
+            animation: rgb-flow 8s linear infinite;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes rgb-flow {
+            0% { background-position: 0% 0; }
+            100% { background-position: 400% 0; }
+        }
+
+        /* Leaves Swaying Animation */
+        .vine-leaf {
+            position: absolute;
+            z-index: 10;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            animation: sway 4s ease-in-out infinite alternate;
+            transform-origin: bottom center;
+        }
+        @keyframes sway {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(10deg); }
+        }
+
+        /* CRT Screen Effect */
+        .tv-screen {
+            position: relative;
+            background: #0a0a0a;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+            border: 4px solid #1f2937;
+        }
+        .tv-screen::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 3px, 3px 100%; pointer-events: none;
+        }
+        .tv-screen::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(255, 255, 255, 0.03);
+            z-index: 2; animation: flicker 0.15s infinite; pointer-events: none;
+        }
+        @keyframes flicker {
+            0% { opacity: 0.02; } 50% { opacity: 0.05; } 100% { opacity: 0.02; }
+        }
+
+        /* Glitch Text Effect */
+        .glitch-text {
+            font-family: 'Share Tech Mono', monospace;
+            color: #ef4444;
+            position: relative;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+        }
+        .glitch-active {
+            animation: text-jitter 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+        }
+        @keyframes text-jitter {
+            0% { transform: translate(0); text-shadow: 2px 0 red, -2px 0 blue; }
+            20% { transform: translate(-2px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
+            40% { transform: translate(-1px, -1px); text-shadow: 2px 0 red, -2px 0 blue; }
+            60% { transform: translate(2px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
+            80% { transform: translate(1px, -1px); text-shadow: 2px 0 red, -2px 0 blue; }
+            100% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
+        }
+
+        /* Static Noise Overlay */
+        .noise {
+            position: absolute; top: -50%; left: -50%; right: -50%; bottom: -50%;
+            width: 200%; height: 200%;
+            background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat 0 0;
+            animation: bg-scroll 0.5s infinite linear;
+            opacity: 0.3; z-index: 1; pointer-events: none;
+        }
+        @keyframes bg-scroll {
+            0% { transform: translate(0,0); }
+            10% { transform: translate(-5%,-5%); }
+            20% { transform: translate(-10%,5%); }
+            30% { transform: translate(5%,-10%); }
+            40% { transform: translate(-5%,15%); }
+            50% { transform: translate(-10%,5%); }
+            60% { transform: translate(15%,0); }
+            70% { transform: translate(0,10%); }
+            80% { transform: translate(-15%,0); }
+            90% { transform: translate(10%,5%); }
+            100% { transform: translate(5%,0); }
+        }
+
+        /* Lottery Card Preview */
+        .lottery-card {
+            background: #fff;
+            border-left: 6px solid #f59e0b;
+            transition: all 0.3s ease;
+        }
+        .lottery-card:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+        
+        ::-webkit-scrollbar { width: 0px; }
+    </style>
+</head>
+<body class="h-screen flex justify-center">
+
+    <div class="w-full max-w-md h-full relative flex flex-col overflow-hidden bg-[#f8fafc]">
+        
+        <div class="glass px-5 py-4 flex items-center justify-between z-40 relative rounded-b-[1.5rem] shadow-sm border-b border-white">
+            <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 btn-press border border-slate-200 hover:bg-slate-100 transition shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="flex-1 text-center">
+                <h1 class="font-extrabold text-slate-800 text-[16px] tracking-tight">লটারি ড্র 🎯</h1>
+            </div>
+            <div class="balance-pill flex-shrink-0">
+                <i class="fa-solid fa-wallet text-[#E2136E] mr-1.5 text-sm"></i>
+                <span class="font-bold text-[#E2136E] text-sm">৳</span>
+                <span id="user-balance" class="font-extrabold text-[#E2136E] font-inter ml-1 truncate" style="font-size: 14px;">0.00</span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-5 pb-10 pt-5 relative z-10">
+
+            <div class="rgb-wrapper mb-8 mt-2">
+                <i class="fa-solid fa-leaf text-emerald-600 vine-leaf text-3xl" style="top: -15px; left: -10px; transform: rotate(-45deg);"></i>
+                <i class="fa-brands fa-envira text-green-700 vine-leaf text-2xl" style="bottom: -10px; right: -5px; transform: rotate(120deg); animation-delay: 1s;"></i>
+                <i class="fa-solid fa-seedling text-emerald-500 vine-leaf text-xl" style="top: 40%; left: -12px; transform: rotate(-90deg); animation-delay: 0.5s;"></i>
+                
+                <div class="tv-screen aspect-video flex flex-col items-center justify-center relative p-4">
+                    <div class="noise"></div>
+                    
+                    <i class="fa-solid fa-skull text-red-500 text-3xl mb-2 opacity-80" style="filter: drop-shadow(0 0 8px red);"></i>
+                    <h2 class="text-white text-[12px] uppercase tracking-[0.3em] font-bold mb-1 opacity-70 z-10">Grand Draw</h2>
+                    
+                    <div class="text-center z-10 mt-1">
+                        <div id="glitch-timer" class="glitch-text text-4xl font-extrabold tracking-widest">
+                            --:--:--
+                        </div>
+                        <p class="text-red-400 text-[10px] mt-1 uppercase tracking-widest font-bold font-inter" id="spooky-msg">System Initializing...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-[1.2rem] p-5 mb-6 flex items-start gap-4 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-200 rounded-full opacity-40 blur-xl animate-pulse"></div>
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-md border border-blue-100 flex-shrink-0 z-10">
+                    <i class="fa-solid fa-hammer text-xl animate-bounce"></i>
+                </div>
+                <div class="z-10">
+                    <h3 class="font-bold text-slate-800 text-[15px] mb-1">কাজ চলমান রয়েছে!</h3>
+                    <p class="text-[12px] text-slate-600 font-medium leading-relaxed">লটারি সিস্টেমটির স্পেশাল প্রিমিয়াম ভার্সনের কাজ চলছে। খুব শীঘ্রই এটি সবার জন্য উন্মুক্ত করা হবে।</p>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-slate-800 text-[16px] mb-4 flex items-center gap-2"><i class="fa-solid fa-ticket text-[#E2136E]"></i> আপকামিং লটারি সমূহ (Preview)</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div class="lottery-card rounded-[1.2rem] p-4 shadow-sm border border-slate-100 relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-[10px] bg-red-50 text-red-500 px-2 py-1 rounded font-bold uppercase tracking-wider border border-red-100">Mega Draw</span>
+                            <h4 class="font-extrabold text-slate-800 text-[15px] mt-1.5">সাপ্তাহিক মেগা লটারি</h4>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">প্রথম পুরস্কার</p>
+                            <p class="font-extrabold text-[#f59e0b] font-inter text-[16px]">৳ 50,000</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="text-[12px] font-bold text-slate-600"><i class="fa-solid fa-tag text-slate-400 mr-1"></i> টিকিটের মূল্য: ৳ 50</p>
+                        <button onclick="showComingSoon()" class="bg-slate-800 text-white text-[11px] px-4 py-2 rounded-lg font-bold btn-press hover:bg-slate-900 transition">টিকিট কিনুন</button>
+                    </div>
+                </div>
+
+                <div class="lottery-card rounded-[1.2rem] p-4 shadow-sm border border-slate-100 relative overflow-hidden" style="border-left-color: #3b82f6;">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-[10px] bg-blue-50 text-blue-500 px-2 py-1 rounded font-bold uppercase tracking-wider border border-blue-100">Daily Mini</span>
+                            <h4 class="font-extrabold text-slate-800 text-[15px] mt-1.5">দৈনিক লাকি ড্র</h4>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">প্রথম পুরস্কার</p>
+                            <p class="font-extrabold text-[#3b82f6] font-inter text-[16px]">৳ 5,000</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p class="text-[12px] font-bold text-slate-600"><i class="fa-solid fa-tag text-slate-400 mr-1"></i> টিকিটের মূল্য: ৳ 10</p>
+                        <button onclick="showComingSoon()" class="bg-slate-800 text-white text-[11px] px-4 py-2 rounded-lg font-bold btn-press hover:bg-slate-900 transition">টিকিট কিনুন</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="coming-soon-modal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/70 backdrop-blur-md hidden px-5 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] max-w-sm w-full p-8 shadow-2xl text-center transform transition-all scale-95 border border-slate-100 relative overflow-hidden" id="cs-content">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-100 rounded-full blur-2xl opacity-60"></div>
+            
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-blue-100 shadow-inner relative z-10">
+                <i class="fa-solid fa-rocket text-4xl text-blue-500 animate-bounce"></i>
+            </div>
+            
+            <h3 class="text-2xl font-extrabold text-slate-800 mb-2 relative z-10">শীঘ্রই চালু হবে!</h3>
+            <p class="text-[14px] text-slate-600 mb-6 font-medium leading-relaxed relative z-10">লটারি সিস্টেমটি খুব শীঘ্রই আপডেট করা হচ্ছে। রিলিজ ডেট জানতে আমাদের টেলিগ্রাম চ্যানেলে যুক্ত থাকুন。</p>
+            
+            <div class="flex flex-col gap-3 relative z-10">
+                <button onclick="joinTelegram()" class="w-full bg-[#0088cc] text-white font-bold h-12 rounded-xl btn-press shadow-[0_5px_15px_rgba(0,136,204,0.3)] hover:bg-[#007ab8] transition flex items-center justify-center gap-2 text-[14px]">
+                    <i class="fa-brands fa-telegram text-lg"></i> টেলিগ্রামে জয়েন করুন
+                </button>
+                <button onclick="closeComingSoon()" class="w-full bg-slate-100 text-slate-600 font-bold h-12 rounded-xl btn-press hover:bg-slate-200 transition text-[14px]">
+                    ফিরে যান
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQx2KtuYvYozwfSyKTbQ41S9H-Nxg4nkA",
+            authDomain: "bkash-pay-542ba.firebaseapp.com",
+            projectId: "bkash-pay-542ba",
+            storageBucket: "bkash-pay-542ba.firebasestorage.app",
+            messagingSenderId: "139557746694",
+            appId: "1:139557746694:web:a25b55a4af0b2a642b2b87"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth(); // Auth Initialize
+        const tg = window.Telegram.WebApp;
+
+        let currentUser = tg.initDataUnsafe?.user || { id: 123456, username: "Tester" };
+        let telegramChannelLink = "https://t.me/YourSupport";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tg.expand();
+            tg.setHeaderColor('#f8fafc');
+            tg.setBackgroundColor('#f8fafc');
+
+            // --- Auth State Check ---
+            auth.onAuthStateChanged((firebaseUser) => {
+                if (!firebaseUser) {
+                    // লগইন করা না থাকলে auth.html এ পাঠিয়ে দিবে
+                    window.location.href = 'auth.html';
+                } else {
+                    // লগইন থাকলে মূল ফাংশনগুলো কল হবে
+                    initializeAppLogic();
+                }
+            });
+        });
+
+        function initializeAppLogic() {
+            // Load Balance
+            db.collection('users').doc(currentUser.id.toString()).onSnapshot(doc => {
+                if(doc.exists) {
+                    const balance = parseFloat(doc.data().balance || 0).toFixed(2);
+                    const el = document.getElementById('user-balance');
+                    el.innerText = balance;
+                    if(balance.length > 7) el.style.fontSize = '12px';
+                }
+            });
+
+            // Load Settings for Telegram link
+            db.collection('appConfig').doc('settings').get().then(doc => {
+                if(doc.exists && doc.data().helpLink) {
+                    telegramChannelLink = doc.data().helpLink;
+                }
+            });
+
+            startSpookyTimer();
+        }
+
+        // Haptic Feedback
+        function triggerVibration() {
+            try {
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(20);
+            } catch(e) {}
+        }
+
+        // --- Spooky Countdown Timer Logic ---
+        let targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 7); // Fake target: 7 days from now
+
+        function startSpookyTimer() {
+            const timerEl = document.getElementById('glitch-timer');
+            const msgEl = document.getElementById('spooky-msg');
+            const spookyMessages = ["WAIT FOR IT...", "SYSTEM LOCKED", "UPDATING CORE...", "DON'T BLINK", "ALMOST THERE..."];
+
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate.getTime() - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Format: HH:MM:SS (Days hidden to look cooler)
+                timerEl.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // Random Glitch Effect
+                if(Math.random() < 0.15) { // 15% chance every second to glitch
+                    timerEl.classList.add('glitch-active');
+                    msgEl.innerText = spookyMessages[Math.floor(Math.random() * spookyMessages.length)];
+                    setTimeout(() => timerEl.classList.remove('glitch-active'), 300);
+                } else {
+                    msgEl.innerText = "System Initializing...";
+                }
+
+            }, 1000);
+        }
+
+        // --- Coming Soon Modal Logic ---
+        function showComingSoon() {
+            triggerVibration();
+            const modal = document.getElementById('coming-soon-modal');
+            const content = document.getElementById('cs-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeComingSoon() {
+            triggerVibration();
+            const modal = document.getElementById('coming-soon-modal');
+            const content = document.getElementById('cs-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function joinTele
