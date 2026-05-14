@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Upgrade - Bᴋᴀsʜ Mᴏɴᴇʏ Cᴀsʜ</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bkash-color: #E2136E;
+            --nagad-color: #F58220;
+            --rocket-color: #8C3494;
+        }
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            color: #1e293b;
+        }
+        .btn-press:active { transform: scale(0.96); transition: transform 0.1s; }
+        
+        /* Gateway Buttons */
+        .gateway-card {
+            border: 2px solid #e2e8f0;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+        .gateway-card.selected-bkash {
+            border-color: var(--bkash-color);
+            background: #fce4ec;
+            filter: grayscale(0%);
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(226, 19, 110, 0.2);
+        }
+        .gateway-card.selected-nagad {
+            border-color: var(--nagad-color);
+            background: #fff7ed;
+            filter: grayscale(0%);
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(245, 130, 32, 0.2);
+        }
+        .gateway-card.selected-rocket {
+            border-color: var(--rocket-color);
+            background: #f3e8f5;
+            filter: grayscale(0%);
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(140, 52, 148, 0.2);
+        }
+        
+        .pulse-ring {
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+    </style>
+</head>
+<body class="h-screen flex justify-center overflow-y-auto pb-10">
+
+    <div id="page-loader" class="fixed inset-0 z-[200] bg-[#f8fafc] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-12 h-12 border-4 border-slate-200 border-t-[#f59e0b] rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-500 font-medium text-sm">যাচাই করা হচ্ছে...</p>
+    </div>
+
+    <div class="w-full max-w-md min-h-screen bg-[#f8fafc] relative shadow-xl">
+        
+        <div class="bg-white px-5 py-4 flex items-center gap-4 sticky top-0 w-full shadow-sm z-50">
+            <button onclick="goBack()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 border border-slate-200 btn-press">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="font-bold text-slate-800 text-[17px]">পেমেন্ট করুন</h1>
+                <p class="text-[12px] text-slate-500 font-medium">VIP মেম্বারশিপ আপগ্রেড</p>
+            </div>
+        </div>
+
+        <div class="px-5 pt-6 space-y-6">
+            
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                <p class="text-[13px] font-bold text-slate-500 mb-1" id="pkg-name">প্যাকেজ লোড হচ্ছে...</p>
+                <p class="text-sm text-slate-600 font-medium mb-2">সর্বমোট পরিশোধ করতে হবে</p>
+                <h2 class="text-4xl font-extrabold text-slate-800 font-inter tracking-tight">৳<span id="pkg-price">0</span></h2>
+            </div>
+
+            <div id="pending-status-section" class="hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-md text-center transform transition-all duration-500">
+                <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto mb-4 border border-amber-100 shadow-inner">
+                    <i class="fa-solid fa-clock-rotate-left text-4xl animate-pulse"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2 tracking-tight">রিকুয়েস্ট পেন্ডিং আছে</h3>
+                <p class="text-[13px] text-slate-500 font-medium mb-6 leading-relaxed">আপনার VIP আপগ্রেড রিকুয়েস্টটি অ্যাডমিন রিভিউ করছেন। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।</p>
+                
+                <div class="bg-slate-50 rounded-xl p-4 text-left space-y-3 border border-slate-200 shadow-inner">
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">প্যাকেজ</span>
+                        <span class="text-[13px] font-bold text-slate-800" id="pending-pkg-name">...</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">TrxID</span>
+                        <span class="text-[13px] font-bold text-slate-800 font-inter uppercase" id="pending-trx-id">...</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">স্ট্যাটাস</span>
+                        <span class="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded border border-amber-200 shadow-sm"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Pending</span>
+                    </div>
+                </div>
+                
+                <button onclick="goBack()" class="w-full bg-slate-800 hover:bg-black text-white font-bold h-12 rounded-xl shadow-lg btn-press mt-6 text-[14px] transition">
+                    হোমে ফিরে যান
+                </button>
+            </div>
+
+            <div id="payment-form-container" class="space-y-6 hidden">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-[15px] mb-3 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs">১</span> পেমেন্ট মাধ্যম সিলেক্ট করুন
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="selectGateway('bkash')" id="btn-bkash" class="gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press">
+                            <img src="https://seeklogo.com/images/B/bkash-logo-0C1572FBB4-seeklogo.com.png" class="h-8 object-contain">
+                            <span class="text-xs font-bold text-slate-700">বিকাশ</span>
+                        </button>
+                        <button onclick="selectGateway('nagad')" id="btn-nagad" class="gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press">
+                            <img src="https://download.logo.wine/logo/N/Nagad/Nagad-Logo.wine.png" class="h-8 object-contain transform scale-125">
+                            <span class="text-xs font-bold text-slate-700">নগদ</span>
+                        </button>
+                        <button onclick="selectGateway('rocket')" id="btn-rocket" class="gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press">
+                            <img src="https://seeklogo.com/images/D/dutch-bangla-rocket-logo-B4D16231EF-seeklogo.com.png" class="h-8 object-contain">
+                            <span class="text-xs font-bold text-slate-700">রকেট</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="dynamic-payment-section" class="hidden transition-all duration-300">
+                    
+                    <div id="status-closed" class="hidden bg-red-50 border border-red-200 rounded-2xl p-5 text-center shadow-sm">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-500 mx-auto mb-3">
+                            <i class="fa-solid fa-store-slash text-xl"></i>
+                        </div>
+                        <h4 class="font-bold text-red-600 text-[15px] mb-1">এই মাধ্যমটি বন্ধ রয়েছে</h4>
+                        <p class="text-xs text-red-500 font-medium">দয়া করে অন্য কোনো পেমেন্ট মাধ্যম সিলেক্ট করুন।</p>
+                    </div>
+
+                    <div id="status-open" class="hidden space-y-6">
+                        
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-[15px] mb-3 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs">২</span> সেন্ড মানি করুন
+                            </h3>
+                            <div id="instruction-card" class="bg-white rounded-2xl p-5 border shadow-sm">
+                                <p class="text-[13px] text-slate-600 font-medium leading-relaxed mb-4">
+                                    নিচের <span id="gateway-name-text" class="font-bold"></span> পার্সোনাল নাম্বারে ঠিক <span class="font-bold text-slate-800 font-inter">৳<span id="instruction-price">0</span></span> <span class="text-blue-600 font-bold">Send Money</span> করুন। পেমেন্ট করার পর ট্রানজেকশন আইডি (TrxID) কপি করে রাখুন।
+                                </p>
+                                
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex justify-between items-center relative overflow-hidden">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-300" id="card-indicator"></div>
+                                    <div>
+                                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1" id="gateway-label">পার্সোনাল নাম্বার</p>
+                                        <h3 class="text-xl font-bold text-slate-800 font-inter tracking-wider" id="admin-number-display">01XXXXXXXXX</h3>
+                                    </div>
+                                    <button onclick="copyNumber()" class="bg-white border border-slate-200 shadow-sm text-slate-600 w-10 h-10 rounded-lg flex items-center justify-center btn-press hover:bg-slate-100">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                            <h3 class="font-bold text-slate-800 text-[15px] mb-4 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs">৩</span> পেমেন্ট তথ্য সাবমিট করুন
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[12px] font-bold text-slate-500 mb-2 block pl-1">যে নাম্বার থেকে টাকা পাঠিয়েছেন</label>
+                                    <input type="tel" id="sender-number" placeholder="01XXXXXXXXX" class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 transition font-inter font-medium text-slate-800">
+                                </div>
+
+                                <div>
+                                    <label class="text-[12px] font-bold text-slate-500 mb-2 block pl-1">Transaction ID (TrxID)</label>
+                                    <input type="text" id="trx-id" placeholder="8X2H..." class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 transition font-inter font-medium text-slate-800 uppercase">
+                                </div>
+
+                                <button onclick="submitPaymentRequest()" id="submit-btn" class="w-full bg-slate-800 hover:bg-black text-white font-bold h-14 rounded-xl shadow-lg shadow-slate-800/20 btn-press mt-2 text-[15px] flex items-center justify-center gap-2 transition">
+                                    <i class="fa-solid fa-paper-plane"></i> সাবমিট করুন
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-[-60px] left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-5 py-3.5 rounded-full shadow-2xl transition-all duration-300 z-[140] flex items-center gap-3 min-w-[220px] justify-center border border-slate-700">
+        <i id="toast-icon" class="fa-solid fa-check-circle text-emerald-400 text-lg"></i>
+        <span id="toast-msg" class="font-bold text-sm tracking-wide">সফল হয়েছে</span>
+    </div>
+
+    <script>
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQx2KtuYvYozwfSyKTbQ41S9H-Nxg4nkA",
+            authDomain: "bkash-pay-542ba.firebaseapp.com",
+            projectId: "bkash-pay-542ba",
+            storageBucket: "bkash-pay-542ba.firebasestorage.app",
+            messagingSenderId: "139557746694",
+            appId: "1:139557746694:web:a25b55a4af0b2a642b2b87"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth(); // Auth Initialize
+        const tg = window.Telegram.WebApp;
+
+        let currentUser = null;
+        let pkgId, pkgPrice, pkgName;
+        let selectedGatewayCode = null;
+        
+        let adminNumbers = { bkash: "", nagad: "", rocket: "" };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tg.ready();
+            tg.expand();
+            
+            // --- Auth State Check ---
+            auth.onAuthStateChanged((firebaseUser) => {
+                if (!firebaseUser) {
+                    // লগইন করা না থাকলে auth.html এ পাঠিয়ে দিবে
+                    window.location.href = 'auth.html';
+                } else {
+                    // লগইন থাকলে মূল ফাংশনগুলো কল হবে
+                    initializeAppLogic();
+                }
+            });
+        });
+
+        async function initializeAppLogic() {
+            if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+                 currentUser = { id: 123456, username: "Tester" }; 
+            } else {
+                 currentUser = tg.initDataUnsafe.user;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            pkgId = urlParams.get('pkgId');
+            pkgPrice = urlParams.get('price');
+            pkgName = urlParams.get('name');
+
+            if(pkgName && pkgPrice) {
+                document.getElementById('pkg-name').innerText = decodeURIComponent(pkgName);
+                document.getElementById('pkg-price').innerText = pkgPrice;
+                document.getElementById('instruction-price').innerText = pkgPrice;
+            }
+
+            // ফায়ারবেস থেকে অ্যাডমিন নাম্বার নেওয়া
+            db.collection('appConfig').doc('settings').get().then((doc) => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    adminNumbers.bkash = data.bkashNumber || "";
+                    adminNumbers.nagad = data.nagadNumber || "";
+                    adminNumbers.rocket = data.rocketNumber || "";
+                }
+            });
+
+            // চেক করা ইউজারের কোনো পেন্ডিং রিকুয়েস্ট আছে কিনা
+            await checkPendingRequest();
+        }
+
+        // ইউজারের পেন্ডিং রিকুয়েস্ট চেক করার ফাংশন
+        async function checkPendingRequest() {
+            try {
+                const snapshot = await db.collection('premium_requests')
+                    .where('userId', '==', currentUser.id.toString())
+                    .where('status', '==', 'pending')
+                    .get();
+
+                const loader = document.getElementById('page-loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+
+                if (!snapshot.empty) {
+                    // পেন্ডিং রিকুয়েস্ট থাকলে ফর্ম হাইড করে পেন্ডিং স্ট্যাটাস শো করবে
+                    const reqData = snapshot.docs[0].data();
+                    showPendingUI(reqData);
+                } else {
+                    // কোনো রিকুয়েস্ট না থাকলে পেমেন্ট ফর্ম শো করবে
+                    document.getElementById('payment-form-container').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error checking request:", error);
+                document.getElementById('payment-form-container').classList.remove('hidden');
+                document.getElementById('page-loader').style.display = 'none';
+            }
+        }
+
+        function showPendingUI(reqData) {
+            document.getElementById('payment-form-container').classList.add('hidden');
+            const pendingSection = document.getElementById('pending-status-section');
+            pendingSection.classList.remove('hidden');
+            
+            // ডেটা বসানো
+            document.getElementById('pending-pkg-name').innerText = reqData.packageName || decodeURIComponent(pkgName);
+            document.getElementById('pending-trx-id').innerText = reqData.transactionId;
+        }
+
+        function selectGateway(gateway) {
+            selectedGatewayCode = gateway;
+            
+            document.getElementById('btn-bkash').className = "gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press";
+            document.getElementById('btn-nagad').className = "gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press";
+            document.getElementById('btn-rocket').className = "gateway-card rounded-2xl py-4 flex flex-col items-center gap-2 btn-press";
+            
+            document.getElementById(`btn-${gateway}`).classList.add(`selected-${gateway}`);
+            document.getElementById('dynamic-payment-section').classList.remove('hidden');
+            
+            const number = adminNumbers[gateway];
+            const statusOpen = document.getElementById('status-open');
+            const statusClosed = document.getElementById('status-closed');
+
+            if(number && number.trim() !== "") {
+                statusClosed.classList.add('hidden');
+                statusOpen.classList.remove('hidden');
+                
+                document.getElementById('admin-number-display').innerText = number;
+                
+                let gatewayName = "", indicatorColor = "", borderColor = "";
+                if(gateway === 'bkash') {
+                    gatewayName = "বিকাশ"; indicatorColor = "#E2136E"; borderColor = "rgba(226, 19, 110, 0.3)";
+                } else if(gateway === 'nagad') {
+                    gatewayName = "নগদ"; indicatorColor = "#F58220"; borderColor = "rgba(245, 130, 32, 0.3)";
+                } else if(gateway === 'rocket') {
+                    gatewayName = "রকেট"; indicatorColor = "#8C3494"; borderColor = "rgba(140, 52, 148, 0.3)";
+                }
+
+                document.getElementById('gateway-name-text').innerText = gatewayName;
+                document.getElementById('gateway-label').innerText = gatewayName + " পার্সোনাল";
+                document.getElementById('card-indicator').style.backgroundColor = indicatorColor;
+                document.getElementById('instruction-card').style.borderColor = borderColor;
+                
+                document.getElementById('sender-number').value = "";
+                document.getElementById('trx-id').value = "";
+            } else {
+                statusOpen.classList.add('hidden');
+                statusClosed.classList.remove('hidden');
+            }
+        }
+
+        function copyNumber() {
+            const num = document.getElementById('admin-number-display').innerText;
+            navigator.clipboard.writeText(num);
+            showToast("নাম্বার কপি করা হয়েছে!", "success");
+        }
+
+        async function submitPaymentRequest() {
+            if(!selectedGatewayCode) return showToast("পেমেন্ট মেথড সিলেক্ট করুন", "error");
+            if(!adminNumbers[selectedGatewayCode] || adminNumbers[selectedGatewayCode].trim() === "") {
+                return showToast("এই মেথডটি এখন বন্ধ আছে", "error");
+            }
+
+            const number = document.getElementById('sender-number').value.trim();
+            const trxId = document.getElementById('trx-id').value.trim();
+
+            if(number.length < 11) return showToast("সঠিক মোবাইল নাম্বার দিন", "error");
+            if(trxId.length < 5) return showToast("সঠিক TrxID দিন", "error");
+
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সাবমিট হচ্ছে...';
+            btn.disabled = true;
+
+            let methodString = selectedGatewayCode === 'bkash' ? 'Bkash' : selectedGatewayCode === 'nagad' ? 'Nagad' : 'Rocket';
+            
+            const reqData = {
+                userId: currentUser.id.toString(),
+                username: currentUser.username || "User",
+                packageId: parseInt(pkgId),
+                packageName: decodeURIComponent(pkgName),
+                price: parseFloat(pkgPrice),
+                paymentMethod: methodString,
+                senderNumber: number,
+                transactionId: trxId,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('premium_requests').add(reqData);
+                showToast("পেমেন্ট রিকুয়েস্ট সফল হয়েছে!", "success");
+                
+                // সাথে সাথেই পেন্ডিং UI শো করানো হচ্ছে
+                setTimeout(() => {
+                    window.scrollTo(0,0);
+                    showPendingUI(reqData);
+                }, 1000);
+
+            } catch (error) {
+                console.error(error);
+                showToast("ইন্টারনেট সংযোগ চেক করুন", "error");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'index.html'; 
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const i = document.getElementById('toast-icon');
+            
+            if(type === 'error') {
+                i.className = 'fa-solid fa-circle-exclamation text-red-400 text-lg';
+            } else {
+                i.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            }
+            
+            t.style.top = '25px';
+            setTimeout(() => t.style.top = '-80px', 3000);
+        }
+    </script>
+</body>
+</html>
